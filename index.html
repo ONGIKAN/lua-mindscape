@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f4f5f7">
+<title>Lua 思维可视化 · UX 概念原型</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="pulse-dot" aria-hidden="true"></span>
+      <h1>Lua 思维可视化</h1>
+      <span class="tag">UX 概念原型 v0</span>
+    </div>
+    <div class="programs" role="tablist" aria-label="示例程序">
+      <button class="chip active" data-program="loop" role="tab">① 循环求和</button>
+      <button class="chip" data-program="fact" role="tab">② 递归调用</button>
+      <button class="chip" data-program="alias" role="tab">③ 表别名</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="pane code-pane">
+      <div class="pane-head">
+        <h2>源代码</h2>
+        <span class="hint">靛蓝 = 正在求值 · 琥珀 = 外层栈帧</span>
+      </div>
+      <div id="code" class="code"></div>
+      <div class="pane-head io-head"><h2>输出</h2></div>
+      <pre id="output" class="output"></pre>
+    </section>
+
+    <section class="pane tree-pane">
+      <div class="pane-head">
+        <h2>语法树 · 思考轨迹</h2>
+        <span class="hint">圆环 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点</span>
+        <div class="tree-tools">
+          <button id="zoomOut" class="tbtn" title="缩小">－</button>
+          <button id="zoomIn" class="tbtn" title="放大">＋</button>
+          <button id="zoomFit" class="tbtn" title="回到跟随">⤢</button>
+        </div>
+      </div>
+      <div id="treeviewport" class="tree-viewport"><div id="tree" class="tree"></div></div>
+    </section>
+
+    <aside class="pane state-pane">
+      <div class="pane-head">
+        <h2>运行状态</h2>
+        <span class="hint">栈帧 · 作用域</span>
+      </div>
+      <div id="frames" class="frames"></div>
+      <div class="stepmeta">
+        <div id="steplabel" class="step-label">准备执行…</div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="controls">
+    <button id="btnReset" class="btn" title="回到开头 (R)">⟲</button>
+    <button id="btnPrev" class="btn" title="上一步 (←)">◀</button>
+    <button id="btnPlay" class="btn primary" title="播放 / 暂停 (空格)">▶</button>
+    <button id="btnNext" class="btn" title="下一步 (→)">▶|</button>
+    <input id="scrub" class="scrub" type="range" min="0" max="0" value="0" aria-label="时间轴">
+    <span id="counter" class="counter">1 / 1</span>
+    <label class="speed-wrap">速度
+      <select id="speed">
+        <option value="360">0.5×</option>
+        <option value="180" selected>1×</option>
+        <option value="70">2.5×</option>
+        <option value="28">6×</option>
+      </select>
+    </label>
+  </footer>
+  <div class="footnote">
+    原型说明：解析器 / 解释器 / trace 回放均为简化版 JavaScript 实现，仅用于验证交互与视觉；
+    正式版核心为 Rust（full-moon 解析 + 显式状态机解释器）→ WebAssembly。
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
