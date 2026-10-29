@@ -34,7 +34,7 @@
 - [x] 中英双语文档：`README.md` / `README.en.md` / `docs/DESIGN.md` / `docs/DESIGN.en.md`（已完成）
 - [x] 可安装客户端（PWA：manifest + Service Worker + 图标；离线可用；正式版为 Tauri 2）（已完成）
 - [x] `README.md` 含英文摘要（已写好，见仓库根目录）
-- [x] 添加 `LICENSE`（MIT，已完成）
+- [x] 添加 `LICENSE` + `NOTICE`（Apache-2.0，已完成）
 - [x] 仓库与演示页互相指向：页面右上角 / 页脚有 GitHub 链接，README 首屏有 Live demo，GitHub About 的 homepage 指向演示页
 - [x] 对外名称：英文 **Lua Mindscape**，中文 **Lua 思维可视化**
 - [ ] 确认提交范围：只提本项目，还是也要处理 `ONGIKAN/lua-node-studio`（另一个仓库）（待用户确认）
@@ -101,7 +101,7 @@ aliasing). It's aimed at teaching, debugging and interactive tutorials.
 
 - Live demo: https://ongikan.github.io/lua-mindscape/
 - Source: https://github.com/ONGIKAN/lua-mindscape
-- License: MIT
+- License: Apache-2.0
 - Additional features: inline Lua editor (edit & re-run, inline parse errors),
   bilingual UI (English / Chinese), installable PWA that also works offline.
 
@@ -136,7 +136,7 @@ Currently a UX prototype (single-page web app, simplified JS interpreter).
 The production core is planned in Rust (lossless parser + explicit state
 machine interpreter) compiled to WebAssembly.
 
-'''License:''' MIT
+'''License:''' Apache-2.0
 
 '''Status:''' prototype (v0.1.0)
 ```

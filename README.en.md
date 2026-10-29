@@ -253,6 +253,4 @@ Key decisions and rationale:
 
 ## License
 
-MIT License — free for personal and commercial use, modification and distribution; just keep the copyright notice. See [LICENSE](LICENSE).
-
-> Prefer Apache-2.0 for an explicit patent grant, or MPL-2.0 / GPL-3.0 if you want modifications to stay open.
+[Apache License 2.0](LICENSE) — free for personal and commercial use, modification and distribution, with an explicit patent grant; keep the copyright notice and [NOTICE](NOTICE) on redistribution, and state changes in modified files.

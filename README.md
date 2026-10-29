@@ -243,6 +243,4 @@ node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --out docs/i
 
 ## 许可
 
-MIT License —— 个人与商业使用、修改、分发均可，只需保留版权声明。详见 [LICENSE](LICENSE)。
-
-> 如需专利授权条款可选 Apache-2.0；如需「改动必须开源」可选 MPL-2.0 或 GPL-3.0。
+[Apache License 2.0](LICENSE) —— 允许个人与商业使用、修改、分发，并包含明确的专利授权；分发时需保留版权声明与 [NOTICE](NOTICE)，修改过的文件需注明变更。
