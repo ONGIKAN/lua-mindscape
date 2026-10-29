@@ -63,7 +63,7 @@ async function waitTarget() {
     try {
       const res = await fetch(`http://127.0.0.1:${port}/json/list`);
       const list = await res.json();
-      const page = list.find(t => t.type === 'page' && t.url.indexOf('index.html') >= 0);
+      const page = list.find(t => t.type === 'page' && /^(https?|file):/.test(t.url));
       if (page) return page;
     } catch (e) { /* not up yet */ }
     await sleep(250);
