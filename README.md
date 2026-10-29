@@ -183,20 +183,25 @@ lua-brain-proto/
 - 相机稳定性：1666px 宽度下整树自动适配为 0.94 倍并完整可见；在 77 个连续事件里相机位置变化 **0 次**（上一版 31 步内 6 次平移）。树尺寸从 1201×675 压缩到 **802×394**（loop 示例，约 -33%）；
 - 两种树布局均通过：规整 `▦`、神经元 `◉` 均 0 异常；神经元模式经节点斥力松弛后相邻节点不再重叠，英文按钮为 `◉ Neuron`，手机 390×844 正常缩放，选择写入 localStorage 后刷新保持，`?layout=neuron` 可直接进入；
 - 强高亮：当前节点放大 + 加粗描边 + 外圈光晕 + 数值胶囊，规整 / 神经元、桌面 / 手机均生效；
-- 手机端（≤520px）紧凑布局：顶部只留品牌 + GitHub 图标 + 语言按钮，示例标签单行横向滚动；
-  代码工具栏收成 `＋ / ⇩ / ✎` 图标、代码区可见约 5 行；状态栏压成一行栈帧胶囊（变量内联）+
-  单行步骤说明；树面板按屏幕自适应缩放整树，支持双指捏合缩放与拖动平移；页脚隐藏；
-  390×844 / 430×932 实测无裁切、0 异常；
+- 手机端（≤520px）拆成**两个页面**，顶部「语法树 / 源代码」切换（选择会记住，`?page=code` 可直达）：
+  - **语法树页**：树占满剩余高度，状态栏一行栈帧胶囊 + 单行步骤说明，播放控制常驻，页脚与示例 chips 隐藏；
+  - **源代码页**：代码区约 34 行，示例 chips、新建 / 导入 / 编辑工具都在，播放控制隐藏；
+    点「▶ 运行」后自动切回语法树页看求值过程；
+  - 两页均支持双指捏合缩放 / 拖动平移，390×844 / 430×932 实测无裁切、0 异常；
 - 中英双语：`?lang=en` 下标题 / 品牌 / 提示 / 栈帧文案全部切换，`EN / 中` 按钮可即时切换并记住选择；
 - PWA：manifest 与 Service Worker 注册成功，可安装、离线打开。
 
-| 平板 | 手机 |
+| 平板 | 手机 · 语法树 |
 | --- | --- |
-| ![平板](docs/images/tablet.png) | ![手机](docs/images/phone.png) |
+| ![平板](docs/images/tablet.png) | ![手机·语法树](docs/images/phone.png) |
 
-| 直接编辑代码并运行 | 英文界面 |
+| 手机 · 源代码 | 直接编辑代码并运行 |
 | --- | --- |
-| ![编辑](docs/images/editor.png) | ![English](docs/images/hero-en.png) |
+| ![手机·源代码](docs/images/phone-code.png) | ![编辑](docs/images/editor.png) |
+
+| 英文界面 | 神经元布局 |
+| --- | --- |
+| ![English](docs/images/hero-en.png) | ![Neuron](docs/images/neuron.png) |
 
 ### 重新生成截图
 
@@ -206,6 +211,7 @@ node tools/qa.mjs --program queens --step 320 --width 1600 --height 1000 --out d
 node tools/qa.mjs --program fact --step 60 --out docs/images/recursion.png
 node tools/qa.mjs --program alias --step 25 --out docs/images/alias.png
 node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --out docs/images/phone.png
+node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --extra "page=code" --out docs/images/phone-code.png
 ```
 
 （需要本机安装 Microsoft Edge；`tools/qa.mjs` 是零依赖的，只用 Node 内置 WebSocket + fetch。）

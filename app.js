@@ -962,6 +962,7 @@ const KIND_CAT = {
 /* ---------------- 6.5 国际化（简体中文 / English） ---------------- */
 const LANG_LS_KEY = 'lua-mindscape:lang';
 const LAYOUT_LS_KEY = 'lua-mindscape:layout';
+const PAGE_LS_KEY = 'lua-mindscape:page';
 
 const I18N = {
   zh: {
@@ -972,6 +973,9 @@ const I18N = {
     'chip.fact': '② 递归调用',
     'chip.alias': '③ 表别名',
     'chip.queens': '④ N 皇后',
+    'page.tree': '语法树',
+    'page.code': '源代码',
+    'aria.pages': '手机页面切换',
     'pane.code': '源代码',
     'pane.output': '输出',
     'pane.tree': '语法树 · 思考轨迹',
@@ -1039,6 +1043,9 @@ const I18N = {
     'chip.fact': '② Recursion',
     'chip.alias': '③ Table alias',
     'chip.queens': '④ N-Queens',
+    'page.tree': 'Trace',
+    'page.code': 'Code',
+    'aria.pages': 'mobile page switcher',
     'pane.code': 'Source code',
     'pane.output': 'Output',
     'pane.tree': 'AST · thought trace',
@@ -1272,7 +1279,8 @@ const app = {
   editing: false,
   editBackup: null,
   lang: 'zh',
-  layoutMode: 'grid'
+  layoutMode: 'grid',
+  page: 'tree'
 };
 
 /* ---------------- 8. 回放状态机 ---------------- */
@@ -1659,6 +1667,43 @@ function zoomBy(f) {
   app.userPanned = false;
   $('#tree').classList.remove('nofollow');
   followTo(app.curId != null ? app.curId : (app.ast && app.ast.id), true);
+}
+
+function readSavedPage() {
+  try { return localStorage.getItem(PAGE_LS_KEY) || ''; } catch (err) { return ''; }
+}
+function writeSavedPage(page) {
+  try { localStorage.setItem(PAGE_LS_KEY, page); } catch (err) { /* noop */ }
+}
+
+/* 手机端两页面切换：桌面端不生效（相关 CSS 只在 ≤520px 内生效） */
+function updateMobileTabs() {
+  document.querySelectorAll('#mobileTabs .mtab').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === app.page);
+  });
+}
+function applyMobilePageClasses() {
+  const root = document.querySelector('.app');
+  if (!root) return;
+  root.classList.toggle('page-tree', app.page !== 'code');
+  root.classList.toggle('page-code', app.page === 'code');
+  updateMobileTabs();
+}
+function setMobilePage(page, save) {
+  app.page = page === 'code' ? 'code' : 'tree';
+  applyMobilePageClasses();
+  if (save !== false) writeSavedPage(app.page);
+  const refresh = () => {
+    if (app.page === 'tree') {
+      if (!app.userPanned) fitTree();
+      if (app.state) render();
+    } else if (app.editing) {
+      positionEditor();
+      refreshEditorBackdrop();
+    }
+  };
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(refresh);
+  else refresh();
 }
 
 function readSavedLayout() {
@@ -2105,6 +2150,8 @@ function runEditor() {
   writeSavedSrc(src);
   setActiveChip(null);
   leaveEdit();
+  /* 手机上运行后自动切回「语法树」页面看思考过程 */
+  if (isCompactUI()) setMobilePage('tree', false);
   if (!app.stillMode) play();
 }
 
@@ -2213,6 +2260,11 @@ function bindControls() {
       setLayoutMode(app.layoutMode === 'neuron' ? 'grid' : 'neuron');
     });
   }
+
+  /* 手机端「语法树 / 源代码」页面切换 */
+  document.querySelectorAll('#mobileTabs .mtab').forEach(btn => {
+    btn.addEventListener('click', () => setMobilePage(btn.dataset.page, true));
+  });
 
   /* 新建 / 导入 */
   $('#btnNew').addEventListener('click', newProgram);
@@ -2414,6 +2466,8 @@ function boot() {
   else app.lang = readSavedLang() === 'en' ? 'en' : 'zh';
   const urlLayout = params.get('layout');
   app.layoutMode = (urlLayout || readSavedLayout()) === 'neuron' ? 'neuron' : 'grid';
+  const urlPage = params.get('page');
+  app.page = (urlPage === 'code' || urlPage === 'tree') ? urlPage : (readSavedPage() === 'code' ? 'code' : 'tree');
   const key = PROGRAMS[params.get('program')] ? params.get('program') : 'loop';
   const still = params.get('still') === '1';
   const step = Math.floor(Number(params.get('step') || '0')) || 0;
@@ -2456,6 +2510,7 @@ function boot() {
     }
   }
   applyI18n();
+  setMobilePage(app.page, false);
   if (params.get('scale')) {
     const s = Number(params.get('scale'));
     if (isFinite(s) && s > 0) {
@@ -2473,7 +2528,7 @@ function boot() {
   }
   window.__luaBrain = {
     app, compileProgram, PROGRAMS, tokenize, parse, run, eventLabel, applyEvent, seek, play, pause, fitTree,
-    enterEdit, leaveEdit, cancelEdit, runEditor, runSource, setLang, t, setLayoutMode,
+    enterEdit, leaveEdit, cancelEdit, runEditor, runSource, setLang, t, setLayoutMode, setMobilePage,
     newProgram, importText,
     isEditing: () => !!app.editing,
     getEditorValue: () => { const ta = $('#editor'); return ta ? ta.value : ''; },

@@ -191,24 +191,31 @@ Verified in a real browser with `tools/qa.mjs` (headless Edge + Chrome DevTools 
   the choice persists in localStorage and `?layout=neuron` enters it directly;
 - Stronger highlight: active node scaled up + thicker outline + outer halo + value chips,
   in both layouts and on mobile;
-- Phone (≤520px) compact layout: header keeps only brand + GitHub icon + language toggle, sample chips
-  scroll horizontally; the code toolbar collapses to `+ / ⤓ / ✎` icons with ~5 code lines visible; the
-  state pane becomes a one-line frame capsule (inline vars) plus a single-line step note; the tree is
-  fit to the screen and supports two-finger pinch-zoom and drag-pan; the footer is hidden; verified at
-  390×844 and 430×932 with no clipping and 0 exceptions;
+- Phone (≤520px) is split into **two pages** with a `Trace / Code` switch at the top (remembered;
+  `?page=code` opens it directly):
+  - **Trace page**: the tree fills the remaining height, the state pane collapses to a one-line frame
+    capsule + single-line step note, playback controls stay visible, footer and sample chips hidden;
+  - **Code page**: ~34 code lines, sample chips plus New / Import / Edit tools, playback controls hidden;
+    tapping `▶ Run` switches back to the Trace page automatically;
+  - both pages support two-finger pinch-zoom and drag-pan; verified at 390×844 and 430×932 with no
+    clipping and 0 exceptions;
 - No exceptions, no console errors; scrubbing, stepping, node-jump and sample switching all pass;
 - Code editing: custom code `local x = 5 / print(x * 2)` runs (19 trace events), parse errors are inline;
   pasting the whole N-Queens program also runs;
 - Bilingual: with `?lang=en` the title / brand / hints / stack texts all switch; the `EN / 中` toggle persists;
 - PWA: manifest + Service Worker register successfully; installable and offline-capable.
 
-| Tablet | Phone |
+| Tablet | Phone · Trace |
 | --- | --- |
-| ![Tablet](docs/images/tablet.png) | ![Phone](docs/images/phone.png) |
+| ![Tablet](docs/images/tablet.png) | ![Phone trace](docs/images/phone.png) |
 
-| Editing code and running it | English UI |
+| Phone · Code | Editing and running |
 | --- | --- |
-| ![Editor](docs/images/editor.png) | ![English](docs/images/hero-en.png) |
+| ![Phone code](docs/images/phone-code.png) | ![Editor](docs/images/editor.png) |
+
+| English UI | Neuron layout |
+| --- | --- |
+| ![English](docs/images/hero-en.png) | ![Neuron](docs/images/neuron.png) |
 
 ### Regenerate screenshots
 
@@ -218,6 +225,7 @@ node tools/qa.mjs --program queens --step 320 --width 1600 --height 1000 --out d
 node tools/qa.mjs --program fact --step 60 --out docs/images/recursion.png
 node tools/qa.mjs --program alias --step 25 --out docs/images/alias.png
 node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --out docs/images/phone.png
+node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --extra "page=code" --out docs/images/phone-code.png
 ```
 
 (Requires Microsoft Edge; `tools/qa.mjs` is dependency-free — Node's built-in WebSocket + fetch.)

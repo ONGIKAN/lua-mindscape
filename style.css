@@ -503,3 +503,28 @@ a.tbtn{display:inline-flex;align-items:center;justify-content:center;text-decora
   #speed{height:24px;font-size:10px;padding:0 3px}
   .footnote{display:none}
 }
+
+
+/* ---------------- 手机端两页面：语法树 / 源代码 ---------------- */
+.mobile-tabs{display:none}
+@media (max-width:520px){
+  .mobile-tabs{display:flex;order:3;flex:1 0 100%;gap:4px;margin-top:2px}
+  .mobile-tabs .mtab{flex:1;height:30px;border:1px solid var(--line-strong);background:var(--surface);
+    color:var(--text-2);font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.4px}
+  .mobile-tabs .mtab.active{background:var(--accent-soft);border-color:#c7cdf8;color:var(--accent)}
+  .stage{display:flex;flex-direction:column;gap:6px;min-height:0}
+  .programs{order:4;flex:1 0 100%}
+  .app.page-tree .code-pane{display:none}
+  .app.page-tree .programs{display:none}
+  .app.page-code .tree-pane,
+  .app.page-code .state-pane{display:none}
+  .app.page-code .controls{display:none}
+  .app.page-code .code-pane{flex:1 1 auto;min-height:0}
+  .app.page-tree .tree-pane{flex:1 1 auto;min-height:0}
+  .app.page-tree .state-pane{flex:0 0 auto}
+  .app.page-code .code-wrap{flex:1 1 auto;min-height:0}
+  .app.page-tree .tree-viewport{min-height:0}
+  .app.page-code #codeHint{display:none}
+  .app.page-code .output{max-height:34px}
+  .app.page-code .footnote{display:none}
+}
