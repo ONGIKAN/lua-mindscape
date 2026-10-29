@@ -25,6 +25,7 @@ It also supports **editing code and running it**, **creating and importing (incl
 a **bilingual UI (English / Chinese)**, and **installing as a desktop / mobile client (PWA, works offline)**.
 The tree uses a **dead-zone camera**: it stays still while the current node is inside the viewport,
 and pans minimally only when it is about to leave.
+The tree has **two layouts**, toggled from the top-right of the tree panel (the choice is remembered):
 
 ![Overview](docs/images/hero-en.png)
 
@@ -103,6 +104,7 @@ The production desktop / mobile builds will ship as **Tauri 2** native apps (see
 | Click an AST node | Jump to the moment when execution reaches that node |
 | Timeline slider | Scrub to any moment (inspects that state directly) |
 | Drag / zoom buttons on the tree | Pan, zoom; `⤢` resumes "follow the current node" |
+| Tree panel top-right `▦ Grid / ◉ Neuron` | Switch tree layout (remembered; also via `?layout=`) |
 | Click the code pane / `✎` | Enter edit mode and edit Lua directly |
 | Toolbar `+ New` / `Import` | New program / import a `.lua` file; you can also drag a file onto the code pane (runs automatically) |
 | `Ctrl`/`⌘` + `Enter` | Run the edited code; parse errors are shown inline |
@@ -121,6 +123,16 @@ the whole tree inside the tree panel; during playback the view does not move at 
 node is inside the viewport, and snaps once only when the node would leave it. Clicking a node,
 zooming or `⤢` re-centers on purpose.
 
+### Two tree layouts
+
+| Grid ▦ | Neuron ◉ |
+| --- | --- |
+| Classic tidy tree — clear hierarchy, best for reading structure | Radial scatter with curved, flowing edges — reads like a neural network |
+| ![Grid layout](docs/images/loop.png) | ![Neuron layout](docs/images/neuron.png) |
+
+The active node is strongly highlighted: scaled up, thicker outline, pulsing outer halo, and
+`= value` / `×n` turned into chips — findable in either layout, on desktop or mobile.
+
 ### URL parameters (for screenshots and UI automation)
 
 | Parameter | Meaning |
@@ -131,6 +143,7 @@ zooming or `⤢` re-centers on purpose.
 | `scale=0.72` | Initial zoom |
 | `debug=1` | Write camera/layout state into `document.title` |
 | `lang=zh\|en` | UI language (remembers last choice in localStorage) |
+| `layout=grid\|neuron` | Initial tree layout (defaults to last choice) |
 
 Edited code is saved to localStorage (`lua-mindscape:src`) and restored on reload;
 `?program=` overrides it. `↺ sample` restores the built-in code.
@@ -151,7 +164,7 @@ lua-brain-proto/
 ├── docs/
 │   ├── DESIGN.md           design notes (Chinese)
 │   ├── DESIGN.en.md        design notes (English)
-│   ├── images/             screenshots
+│   ├── images/             screenshots (grid / neuron / desktop / recursion / aliasing / queens / editor / tablet / phone / English)
 │   └── community-submission.md  community submission drafts (awesome-lua / lua-users / lua-l / Reddit)
 ├── README.md               Chinese README
 └── README.en.md            this file
@@ -169,6 +182,11 @@ Verified in a real browser with `tools/qa.mjs` (headless Edge + Chrome DevTools 
   parses and runs correctly; 3 recursive frames visible with their `cols / diag1 / diag2 / avail / bit`
   values; output `4`;
 - Layouts work at 1600×1000 / 1920×1080 desktop, 820×1180 tablet, 390×844 phone;
+- Both tree layouts pass: grid and neuron 0 exceptions; in neuron mode the force-relaxation pass
+  keeps adjacent nodes from overlapping; EN button reads `◉ Neuron`; phone 390×844 scales normally;
+  the choice persists in localStorage and `?layout=neuron` enters it directly;
+- Stronger highlight: active node scaled up + thicker outline + outer halo + value chips,
+  in both layouts and on mobile;
 - No exceptions, no console errors; scrubbing, stepping, node-jump and sample switching all pass;
 - Code editing: custom code `local x = 5 / print(x * 2)` runs (19 trace events), parse errors are inline;
   pasting the whole N-Queens program also runs;

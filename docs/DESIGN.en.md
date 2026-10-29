@@ -84,12 +84,19 @@ Style: light, square, thin borders, one accent color — a *teaching dashboard*,
   once only when the node would leave. Clicking a node, zooming or `⤢` re-centers. Panning/zooming
   pauses follow; on small screens the active code line is scrolled into view.
 - **Bilingual**: UI strings and node kind names come from an i18n dictionary; `EN / 中` persists.
+- **Two tree layouts**: `▦ Grid` is the classic tidy tree; `◉ Neuron` places nodes radially with
+  deterministic jitter and a node-repulsion relaxation pass, drawing curved dashed animated edges.
+  The choice persists (`lua-mindscape:layout`) and can be forced with `?layout=neuron`.
+- **Stronger active highlight**: the current node is scaled 1.24×, gets a thicker outline and a
+  pulsing outer halo; value and `×n` become chips, so it is findable in any layout.
 
 ## 6. Layout & rendering
 
 - Three panes: source / tree / runtime state; single column below 980px.
 - Tree layout: classic tidy tree (leaves take rows, parents at children's midpoint), with extra
   spacing between sibling subtrees so branches from different parents do not visually merge.
+- Neuron layout: child sectors weighted by leaf count (+ deterministic jitter), then a node-repulsion
+  relaxation pass; edges are center-to-center curves with a perpendicular bend and a dashed flow animation.
 - Rendering: DIV nodes + SVG cubic edges; update classes/text only, never rebuild the DOM.
 - Camera: direct `translate + scale`, static layout coordinates.
 

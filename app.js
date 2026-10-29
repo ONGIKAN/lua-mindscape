@@ -961,6 +961,7 @@ const KIND_CAT = {
 
 /* ---------------- 6.5 国际化（简体中文 / English） ---------------- */
 const LANG_LS_KEY = 'lua-mindscape:lang';
+const LAYOUT_LS_KEY = 'lua-mindscape:layout';
 
 const I18N = {
   zh: {
@@ -977,7 +978,7 @@ const I18N = {
     'pane.state': '运行状态',
     'hint.code': '点代码编辑 · 靛蓝 = 求值中 · 琥珀 = 外层帧',
     'hint.codeEdit': '编辑中 · Ctrl+Enter 运行 · Tab 缩进 · Esc 取消',
-    'hint.tree': '方框 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点',
+    'hint.tree': '方框 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点 · 右上切换布局',
     'hint.state': '栈帧 · 作用域',
     'speed': '速度',
     'btn.reset': '回到开头 (R)',
@@ -987,6 +988,9 @@ const I18N = {
     'btn.zoomOut': '缩小',
     'btn.zoomIn': '放大',
     'btn.zoomFit': '回到跟随',
+    'btn.layout': '布局：规整 / 神经元',
+    'layout.grid': '▦ 规整',
+    'layout.neuron': '◉ 神经元',
     'btn.edit': '编辑代码',
     'btn.editRun': '运行并退出编辑 (Ctrl+Enter)',
     'btn.run': '▶ 运行',
@@ -1040,7 +1044,7 @@ const I18N = {
     'pane.state': 'Runtime state',
     'hint.code': 'Click code to edit · indigo = evaluating · amber = caller frame',
     'hint.codeEdit': 'Editing · Ctrl+Enter to run · Tab to indent · Esc to cancel',
-    'hint.tree': 'box = current node · numbers = computed value · ×n = repetition hotspot',
+    'hint.tree': 'box = current node · numbers = computed value · ×n = repetition hotspot · switch layout at top-right',
     'hint.state': 'frames · scopes',
     'speed': 'Speed',
     'btn.reset': 'Restart (R)',
@@ -1050,6 +1054,9 @@ const I18N = {
     'btn.zoomOut': 'Zoom out',
     'btn.zoomIn': 'Zoom in',
     'btn.zoomFit': 'Follow current node',
+    'btn.layout': 'Layout: grid / neuron',
+    'layout.grid': '▦ Grid',
+    'layout.neuron': '◉ Neuron',
     'btn.edit': 'Edit code',
     'btn.editRun': 'Run and leave editor (Ctrl+Enter)',
     'btn.run': '▶ Run',
@@ -1141,6 +1148,11 @@ function applyI18n() {
       const el = app.nodeEls.get(id);
       if (el) el.title = kindName(nd.k) + '  [' + nd.span[0] + '..' + nd.span[1] + ']';
     }
+  }
+  const layoutBtn = $('#btnLayout');
+  if (layoutBtn) {
+    layoutBtn.textContent = app.layoutMode === 'neuron' ? t('layout.neuron') : t('layout.grid');
+    layoutBtn.title = t('btn.layout');
   }
   const stepLabel = $('#steplabel');
   if (stepLabel && !app.trace) stepLabel.textContent = t('ready');
@@ -1246,7 +1258,8 @@ const app = {
   curId: null,
   editing: false,
   editBackup: null,
-  lang: 'zh'
+  lang: 'zh',
+  layoutMode: 'grid'
 };
 
 /* ---------------- 8. 回放状态机 ---------------- */
@@ -1380,6 +1393,8 @@ function buildTree() {
   treeEl.innerHTML = '';
   app.nodeEls = new Map();
   app.edgeEls = new Map();
+  treeEl.classList.toggle('layout-neuron', app.layoutMode === 'neuron');
+  treeEl.classList.toggle('layout-grid', app.layoutMode !== 'neuron');
 
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
@@ -1392,22 +1407,60 @@ function buildTree() {
   const COL = 114;
   const all = [];
   let leaf = 0;
+  const hash01 = (seed) => {
+    let h = (seed * 2654435761) >>> 0;
+    h = (h ^ (h >>> 13)) >>> 0;
+    h = (h * 1274126177) >>> 0;
+    return ((h >>> 8) % 1000) / 1000;
+  };
 
-  (function place(n, depth) {
-    n.gx = depth * COL + 10;
-    const kids = childrenOf(n);
-    if (!kids.length) {
-      n.gy = leaf * ROW;
-      leaf++;
-    } else {
-      kids.forEach((c, i) => {
-        if (i > 0) leaf += 0.35; // 兄弟子树之间留呼吸间距，避免不同父节点的分支在视觉上混成一片
-        place(c, depth + 1);
+  if (app.layoutMode === 'neuron') {
+    /* 神经元布局：根在左侧，子树像树突/轴突一样呈扇形伸展，
+       节点位置带确定性抖动，使分布不规则但每次刷新都稳定。 */
+    (function countLeaves(n) {
+      const kids = childrenOf(n);
+      n._leafCount = kids.length ? kids.reduce((s, c) => s + countLeaves(c), 0) : 1;
+      return n._leafCount;
+    })(app.ast);
+    (function place(n, x, y, ang, span) {
+      n.gx = x;
+      n.gy = y;
+      const kids = childrenOf(n);
+      if (!kids.length) { all.push(n); return; }
+      const total = kids.reduce((s, c) => s + c._leafCount, 0);
+      let a = ang - span / 2;
+      kids.forEach(c => {
+        const frac = c._leafCount / total;
+        const mid = a + span * frac / 2;
+        const jitter = (hash01(c.id) - 0.5) * 0.26;
+        const r = 126 + (hash01(c.id * 7 + 3) - 0.5) * 30;
+        place(c, x + Math.cos(mid + jitter) * r, y + Math.sin(mid + jitter) * r,
+          mid + jitter, Math.max(0.24, span * frac * 1.45));
+        a += span * frac;
       });
-      n.gy = (kids[0].gy + kids[kids.length - 1].gy) / 2;
-    }
-    all.push(n);
-  })(app.ast, 0);
+      all.push(n);
+    })(app.ast, 0, 0, 0, 1.55);
+    let minX = Infinity;
+    let minY = Infinity;
+    for (const n of all) { minX = Math.min(minX, n.gx); minY = Math.min(minY, n.gy); }
+    for (const n of all) { n.gx += 26 - minX; n.gy += 26 - minY; }
+  } else {
+    (function place(n, depth) {
+      n.gx = depth * COL + 10;
+      const kids = childrenOf(n);
+      if (!kids.length) {
+        n.gy = leaf * ROW;
+        leaf++;
+      } else {
+        kids.forEach((c, i) => {
+          if (i > 0) leaf += 0.35; // 兄弟子树之间留呼吸间距，避免不同父节点的分支在视觉上混成一片
+          place(c, depth + 1);
+        });
+        n.gy = (kids[0].gy + kids[kids.length - 1].gy) / 2;
+      }
+      all.push(n);
+    })(app.ast, 0);
+  }
 
   (function create(n) {
     const el = document.createElement('div');
@@ -1428,10 +1481,59 @@ function buildTree() {
     for (const c of childrenOf(n)) create(c);
   })(app.ast);
 
+  if (app.layoutMode === 'neuron') {
+    /* 简单的斥力松弛：节点互相压住时向外推开，让分布自然一些 */
+    for (let iter = 0; iter < 48; iter++) {
+      for (let i = 0; i < all.length; i++) {
+        for (let j = i + 1; j < all.length; j++) {
+          const a = all[i];
+          const b = all[j];
+          const aw = ((a._el && a._el.offsetWidth) || 60) / 2 + 14;
+          const ah = ((a._el && a._el.offsetHeight) || 24) / 2 + 10;
+          const bw = ((b._el && b._el.offsetWidth) || 60) / 2 + 14;
+          const bh = ((b._el && b._el.offsetHeight) || 24) / 2 + 10;
+          let dx = b.gx - a.gx;
+          let dy = b.gy - a.gy;
+          const overlapX = aw + bw - Math.abs(dx);
+          const overlapY = ah + bh - Math.abs(dy);
+          if (overlapX > 0 && overlapY > 0) {
+            if (dx === 0) dx = 0.01;
+            if (dy === 0) dy = 0.01;
+            const d = Math.hypot(dx, dy) || 1;
+            const push = Math.min(overlapX, overlapY) * 0.5 + 0.5;
+            const nx = dx / d;
+            const ny = dy / d;
+            a.gx -= nx * push;
+            a.gy -= ny * push;
+            b.gx += nx * push;
+            b.gy += ny * push;
+          }
+        }
+      }
+    }
+    let mnX = Infinity;
+    let mnY = Infinity;
+    for (const n of all) { mnX = Math.min(mnX, n.gx); mnY = Math.min(mnY, n.gy); }
+    for (const n of all) {
+      n.gx += 26 - mnX;
+      n.gy += 24 - mnY;
+      if (n._el) {
+        n._el.style.left = n.gx + 'px';
+        n._el.style.top = n.gy + 'px';
+      }
+    }
+  }
+
   let maxX = 0;
-  for (const n of all) maxX = Math.max(maxX, n.gx + n._el.offsetWidth);
-  const treeW = Math.max(320, maxX + 80);
-  const treeH = Math.max(160, leaf * ROW + 40);
+  let maxY = 0;
+  for (const n of all) {
+    maxX = Math.max(maxX, n.gx + n._el.offsetWidth);
+    maxY = Math.max(maxY, n.gy + 22);
+  }
+  const treeW = Math.max(320, maxX + (app.layoutMode === 'neuron' ? 56 : 80));
+  const treeH = app.layoutMode === 'neuron'
+    ? Math.max(160, maxY + 56)
+    : Math.max(160, leaf * ROW + 40);
   app.treeW = treeW;
   app.treeH = treeH;
   treeEl.style.width = treeW + 'px';
@@ -1445,14 +1547,34 @@ function buildTree() {
     const pn = app.byId.get(pid);
     if (!pn) continue;
     const pW = pn._el.offsetWidth || 60;
-    const x1 = pn.gx + pW;
-    const y1 = pn.gy;
-    const x2 = n.gx - 3;
-    const y2 = n.gy;
-    const dx = Math.max(22, (x2 - x1) * 0.6);
     const path = document.createElementNS(NS, 'path');
-    path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' C ' + (x1 + dx) + ' ' + y1 + ', ' +
-      (x2 - dx) + ' ' + y2 + ', ' + x2 + ' ' + y2);
+    if (app.layoutMode === 'neuron') {
+      const nW = n._el.offsetWidth || 60;
+      const x1 = pn.gx + pW / 2;
+      const y1 = pn.gy;
+      const x2 = n.gx + nW / 2;
+      const y2 = n.gy;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len;
+      const uy = dy / len;
+      const bend = (hash01(n.id * 17 + 5) - 0.5) * len * 0.55;
+      const c1x = x1 + ux * len * 0.35 - uy * bend;
+      const c1y = y1 + uy * len * 0.35 + ux * bend;
+      const c2x = x2 - ux * len * 0.35 - uy * bend * 0.6;
+      const c2y = y2 - uy * len * 0.35 + ux * bend * 0.6;
+      path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' C ' + c1x + ' ' + c1y + ', ' +
+        c2x + ' ' + c2y + ', ' + x2 + ' ' + y2);
+    } else {
+      const x1 = pn.gx + pW;
+      const y1 = pn.gy;
+      const x2 = n.gx - 3;
+      const y2 = n.gy;
+      const dx = Math.max(22, (x2 - x1) * 0.6);
+      path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' C ' + (x1 + dx) + ' ' + y1 + ', ' +
+        (x2 - dx) + ' ' + y2 + ', ' + x2 + ' ' + y2);
+    }
     path.setAttribute('class', 'e');
     gEl.appendChild(path);
     app.edgeEls.set(n.id, path);
@@ -1523,6 +1645,28 @@ function zoomBy(f) {
   app.userPanned = false;
   $('#tree').classList.remove('nofollow');
   followTo(app.curId != null ? app.curId : (app.ast && app.ast.id), true);
+}
+
+function readSavedLayout() {
+  try { return localStorage.getItem(LAYOUT_LS_KEY) || ''; } catch (err) { return ''; }
+}
+function writeSavedLayout(mode) {
+  try { localStorage.setItem(LAYOUT_LS_KEY, mode); } catch (err) { /* noop */ }
+}
+/* 切换布局：grid = 规整；neuron = 神经元 */
+function setLayoutMode(mode) {
+  const next = mode === 'neuron' ? 'neuron' : 'grid';
+  if (next === app.layoutMode && app.trace) return;
+  app.layoutMode = next;
+  writeSavedLayout(next);
+  applyI18n();
+  if (app.trace) {
+    buildTree();
+    app.scale = 1;
+    app.userPanned = false;
+    fitTree();
+    render();
+  }
 }
 
 /* ---------------- 11. 主渲染 ---------------- */
@@ -2023,6 +2167,12 @@ function bindControls() {
   $('#zoomIn').addEventListener('click', () => zoomBy(1.18));
   $('#zoomOut').addEventListener('click', () => zoomBy(1 / 1.18));
   $('#zoomFit').addEventListener('click', () => fitTree());
+  const layoutBtn = $('#btnLayout');
+  if (layoutBtn) {
+    layoutBtn.addEventListener('click', () => {
+      setLayoutMode(app.layoutMode === 'neuron' ? 'grid' : 'neuron');
+    });
+  }
 
   /* 新建 / 导入 */
   $('#btnNew').addEventListener('click', newProgram);
@@ -2185,6 +2335,8 @@ function boot() {
   const urlLang = params.get('lang');
   if (urlLang === 'en' || urlLang === 'zh') app.lang = urlLang;
   else app.lang = readSavedLang() === 'en' ? 'en' : 'zh';
+  const urlLayout = params.get('layout');
+  app.layoutMode = (urlLayout || readSavedLayout()) === 'neuron' ? 'neuron' : 'grid';
   const key = PROGRAMS[params.get('program')] ? params.get('program') : 'loop';
   const still = params.get('still') === '1';
   const step = Math.floor(Number(params.get('step') || '0')) || 0;
@@ -2244,7 +2396,7 @@ function boot() {
   }
   window.__luaBrain = {
     app, compileProgram, PROGRAMS, tokenize, parse, run, eventLabel, applyEvent, seek, play, pause, fitTree,
-    enterEdit, leaveEdit, cancelEdit, runEditor, runSource, setLang, t,
+    enterEdit, leaveEdit, cancelEdit, runEditor, runSource, setLang, t, setLayoutMode,
     newProgram, importText,
     isEditing: () => !!app.editing,
     getEditorValue: () => { const ta = $('#editor'); return ta ? ta.value : ''; },

@@ -325,3 +325,50 @@ a.tbtn{display:inline-flex;align-items:center;justify-content:center;text-decora
 .footnote .foot-sep{color:var(--line-strong)}
 .footnote a.foot-link{color:var(--accent);text-decoration:none;white-space:nowrap}
 .footnote a.foot-link:hover{text-decoration:underline}
+
+
+/* ================= 当前节点高亮强化 ================= */
+.node.n-active{
+  opacity:1;color:#111827;z-index:9;
+  transform:translateY(-50%) scale(1.24);
+  background:#fff;
+  border:2px solid var(--fc,var(--accent));
+  box-shadow:0 0 0 3px rgba(79,70,229,.16), 0 0 0 9px rgba(79,70,229,.07), 0 14px 30px -10px rgba(17,24,39,.35);
+  animation:activeGlow 1.5s ease-in-out infinite;
+}
+.node.n-active .lbl{font-size:12px;font-weight:700;color:var(--fc,var(--accent))}
+.node.n-active .val{color:#0b5d54;background:#e7f6ef;padding:0 4px;font-weight:600}
+.node.n-active .heat{background:#fdecc8;color:#b45309;padding:0 3px;font-weight:700}
+.node.n-active::after{
+  content:"";position:absolute;inset:-9px;border-radius:0;
+  border:2px solid var(--fc,var(--accent));
+  animation:haloStrong 1.35s ease-out infinite;pointer-events:none;
+}
+@keyframes haloStrong{0%{opacity:.6;transform:scale(.99)}100%{opacity:0;transform:scale(1.26)}}
+@keyframes activeGlow{
+  0%,100%{box-shadow:0 0 0 3px rgba(79,70,229,.14), 0 0 0 9px rgba(79,70,229,.06), 0 12px 26px -10px rgba(17,24,39,.3)}
+  50%{box-shadow:0 0 0 3px rgba(79,70,229,.24), 0 0 0 13px rgba(79,70,229,.10), 0 16px 34px -8px rgba(17,24,39,.42)}
+}
+.node.n-path{border-color:#b6bff2;box-shadow:0 0 0 2px rgba(79,70,229,.07)}
+.node.n-parent{box-shadow:0 0 0 2px rgba(226,165,72,.14)}
+.line.active{background:#e2e8ff;box-shadow:inset 3px 0 0 var(--accent)}
+.tok-active{
+  background:#c3cffe;color:#10133d;font-weight:700;
+  box-shadow:0 0 0 1px #8f9cf0;padding:0 2px;
+}
+
+/* ================= 神经元布局模式 ================= */
+.tree-tools .tbtn.wide{width:auto;min-width:26px;padding:0 7px;font-size:10.5px;font-weight:600;letter-spacing:.3px}
+.tree.layout-neuron .e{stroke:#b6c1d7;stroke-width:1.5;opacity:.95}
+.tree.layout-neuron .e.done{stroke:#dbe1ea}
+.tree.layout-neuron .e.path{
+  stroke:#6f66ee;stroke-width:2.1;opacity:1;
+  stroke-dasharray:7 6;
+  animation:edgeFlow 1.2s linear infinite;
+}
+.tree.layout-neuron .e.parent{stroke:#e2a548;stroke-width:1.7;stroke-dasharray:4 4}
+@keyframes edgeFlow{to{stroke-dashoffset:-26}}
+.tree.layout-neuron .node{box-shadow:0 1px 5px rgba(23,32,64,.08)}
+@media (max-width:520px){
+  .tree-tools .tbtn.wide{padding:0 5px;font-size:10px}
+}
