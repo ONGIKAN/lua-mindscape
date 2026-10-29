@@ -140,6 +140,7 @@ h1,h2{font-family:var(--sans)}
   background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;
 }
 .tbtn.run:hover{background:#4338ca;border-color:#4338ca;color:#fff}
+.pane-tools .tbtn.text{width:auto;min-width:26px;padding:0 7px;font-size:11px;font-weight:600}
 .tbtn[hidden]{display:none}
 .tree-viewport{
   position:relative;flex:1;min-height:180px;overflow:hidden;border-radius:0;
@@ -160,10 +161,10 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .e.parent{stroke:#eab861;stroke-width:1.4;stroke-dasharray:3 3}
 
 .node{
-  position:absolute;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 8px;
+  position:absolute;display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 6px;
   border-radius:0;background:var(--surface);
   border:1px solid #ccd3dd;color:#2b3442;
-  font-size:11.5px;line-height:1;white-space:nowrap;
+  font-size:11px;line-height:1;white-space:nowrap;
   box-shadow:0 1px 2px rgba(16,24,40,.04);
   transform:translateY(-50%);
   transition:background .15s,border-color .15s,color .15s,box-shadow .15s,opacity .15s,transform .12s;
@@ -177,8 +178,8 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .node.c-call .lbl{color:var(--amber)}
 .node.c-stmt .lbl{color:#7c3aed}
 .node.c-blk .lbl{color:#6b7280;font-weight:500}
-.node .val{color:#0b6b5f;font-size:10.5px;font-weight:600}
-.node .heat{color:#b45309;font-size:9.5px;font-weight:700}
+.node .val{color:#0b6b5f;font-size:10px;font-weight:600}
+.node .heat{color:#b45309;font-size:9px;font-weight:700}
 
 .node.n-pending{opacity:.62;border-color:#e3e7ee;border-style:dashed;background:#fefefe}
 .node.n-done{opacity:1;border-color:#dbe0e8;background:#fff}

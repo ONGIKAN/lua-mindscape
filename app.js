@@ -753,7 +753,7 @@ const I18N = {
     'pane.output': '输出',
     'pane.tree': '语法树 · 思考轨迹',
     'pane.state': '运行状态',
-    'hint.code': '点击代码即可编辑 · 靛蓝 = 正在求值 · 琥珀 = 外层栈帧',
+    'hint.code': '点代码编辑 · 靛蓝 = 求值中 · 琥珀 = 外层帧',
     'hint.codeEdit': '编辑中 · Ctrl+Enter 运行 · Tab 缩进 · Esc 取消',
     'hint.tree': '方框 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点',
     'hint.state': '栈帧 · 作用域',
@@ -770,7 +770,9 @@ const I18N = {
     'btn.run': '▶ 运行',
     'btn.restore': '↺ 示例',
     'btn.new': '新建代码',
+    'btn.newText': '+ 新建',
     'btn.import': '导入 Lua 文件',
+    'btn.importText': '导入',
     'hint.new': '新程序 · Ctrl+Enter 运行',
     'hint.imported': '已导入 {name}',
     'err.file': '文件读取失败',
@@ -830,7 +832,9 @@ const I18N = {
     'btn.run': '▶ Run',
     'btn.restore': '↺ Sample',
     'btn.new': 'New code',
+    'btn.newText': '+ New',
     'btn.import': 'Import Lua file',
+    'btn.importText': 'Import',
     'hint.new': 'New program · Ctrl+Enter to run',
     'hint.imported': 'imported {name}',
     'err.file': 'Could not read the file',
@@ -1159,8 +1163,8 @@ function buildTree() {
   svg.appendChild(gEl);
   treeEl.appendChild(svg);
 
-  const ROW = 38;
-  const COL = 148;
+  const ROW = 30;
+  const COL = 114;
   const all = [];
   let leaf = 0;
 
@@ -1172,7 +1176,7 @@ function buildTree() {
       leaf++;
     } else {
       kids.forEach((c, i) => {
-        if (i > 0) leaf += 0.5; // 兄弟子树之间留呼吸间距，避免不同父节点的分支在视觉上混成一片
+        if (i > 0) leaf += 0.35; // 兄弟子树之间留呼吸间距，避免不同父节点的分支在视觉上混成一片
         place(c, depth + 1);
       });
       n.gy = (kids[0].gy + kids[kids.length - 1].gy) / 2;
@@ -1249,40 +1253,27 @@ function followTo(nodeId, center) {
   if (!n) return;
   const s = app.scale;
   const nw = (n._el && n._el.offsetWidth) || 70;
-  const nh = (n._el && n._el.offsetHeight) || 26;
-  const sx = (n.gx + nw / 2) * s + app.tx;
-  const sy = (n.gy + nh / 2) * s + app.ty;
-  const padX = Math.min(W * 0.16, 80) + (nw * s) / 2;
-  const padY = Math.min(H * 0.16, 70) + (nh * s) / 2;
-  const dl = padX;
-  const dr = W - padX;
-  const dt = padY;
-  const db = H - padY;
+  const nh = (n._el && n._el.offsetHeight) || 24;
+  const x1 = n.gx * s + app.tx;
+  const x2 = (n.gx + nw) * s + app.tx;
+  const y1 = n.gy * s + app.ty;
+  const y2 = (n.gy + nh) * s + app.ty;
   let dx = 0;
   let dy = 0;
   if (center) {
-    dx = W / 2 - sx;
-    dy = H / 2 - sy;
+    dx = W / 2 - (x1 + x2) / 2;
+    dy = H / 2 - (y1 + y2) / 2;
   } else {
-    if (dl > dr) dx = W / 2 - sx;
-    else if (sx < dl) dx = dl - sx;
-    else if (sx > dr) dx = dr - sx;
-    if (dt > db) dy = H / 2 - sy;
-    else if (sy < dt) dy = dt - sy;
-    else if (sy > db) dy = db - sy;
+    /* 只要节点完整地待在视口里就绝不动画面；越界了才一次性把它放到中间 */
+    const M = 20;
+    if (x2 > W - M || x1 < M || y2 > H - M || y1 < M) {
+      dx = W / 2 - (x1 + x2) / 2;
+      dy = H / 2 - (y1 + y2) / 2;
+    }
   }
   if (!dx && !dy) return;
-  const tw = app.treeW * s;
-  const th = app.treeH * s;
-  const E = 36; // 树比视口大时允许的越界留白
-  if (dx !== 0) {
-    if (tw > W - 2 * E) app.tx = Math.max(W - tw - E, Math.min(E, app.tx + dx));
-    else app.tx = (W - tw) / 2;
-  }
-  if (dy !== 0) {
-    if (th > H - 2 * E) app.ty = Math.max(H - th - E, Math.min(E, app.ty + dy));
-    else app.ty = (H - th) / 2;
-  }
+  app.tx += dx;
+  app.ty += dy;
   applyView();
 }
 
@@ -1293,10 +1284,13 @@ function fitTree() {
   const W = vp.clientWidth - 32;
   const H = vp.clientHeight - 32;
   const s = Math.min(W / Math.max(1, app.treeW), H / Math.max(1, app.treeH));
-  app.scale = Math.max(0.35, Math.min(1, Math.round(s * 100) / 100));
+  app.scale = Math.max(0.7, Math.min(1, Math.round(s * 100) / 100));
   app.userPanned = false;
   $('#tree').classList.remove('nofollow');
-  followTo(app.curId != null ? app.curId : (app.ast && app.ast.id), true);
+  app.tx = (vp.clientWidth - app.treeW * app.scale) / 2;
+  app.ty = (vp.clientHeight - app.treeH * app.scale) / 2;
+  applyView();
+  followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
 }
 
 function zoomBy(f) {
@@ -1553,6 +1547,7 @@ function runSource(src) {
   $('#scrub').max = String(Math.max(0, app.trace.events.length - 1));
   applyView();
   seek(0);
+  fitTree();
 }
 
 function loadProgram(key) {
@@ -1928,7 +1923,9 @@ function bindControls() {
   });
 
   window.addEventListener('resize', () => {
-    followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
+    if (app.editing) return;
+    if (!app.userPanned) fitTree();
+    else followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
   });
 
   if (new URLSearchParams(location.search).get('debug') === '1') {
