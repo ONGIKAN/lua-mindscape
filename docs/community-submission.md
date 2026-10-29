@@ -31,6 +31,8 @@
 
 - [ ] 代码推送到公开仓库：建议仓库名 `lua-mindscape`（或 `lua-mind-viz`）
 - [ ] 部署在线 demo（本原型是纯静态页，可直接用 GitHub Pages，无需构建）
+- [x] 中英双语文档：`README.md` / `README.en.md` / `docs/DESIGN.md` / `docs/DESIGN.en.md`（已完成）
+- [x] 可安装客户端（PWA：manifest + Service Worker + 图标；离线可用；正式版为 Tauri 2）（已完成）
 - [ ] `README.md` 含英文摘要（已写好，见仓库根目录）
 - [ ] 添加 `LICENSE`（建议 MIT）
 - [ ] GitHub 登录有效（注意：本机 `gh auth status` 显示 token 已失效，需要先 `gh auth login`）
@@ -58,6 +60,9 @@ Lua's evaluation trace on top of the AST.
 - Playback timeline: play / pause / step / scrub / click a node to jump in time
 - Call-stack panel with per-frame colors; values shown as node badges
 - Table identity colors (aliasing visible at a glance)
+- Inline Lua editor: edit the source and run it; parse errors shown inline
+- Bilingual UI (English / Chinese) with a persisted language toggle
+- Installable as a desktop / mobile client (PWA) and works offline
 - Light, minimal theme; responsive layout for desktop / tablet / phone
 
 Try it: https://<your-pages-url>
@@ -74,7 +79,7 @@ validate the interaction model. The production core is planned in Rust
 **条目（英文，按列表格式）**：
 
 ```markdown
-- [Lua Mindscape](https://github.com/<you>/lua-mindscape) - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time; makes recursion, scope frames and table aliases visible in the browser (web demo).
+- [Lua Mindscape](https://github.com/<you>/lua-mindscape) - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time; makes recursion, scope frames and table aliases visible, with an inline Lua editor, English/Chinese UI and installable web app.
 ```
 
 **PR 标题**：`Add Lua Mindscape to IDEs and Plugins`
@@ -94,6 +99,8 @@ aliasing). It's aimed at teaching, debugging and interactive tutorials.
 - Live demo: https://<your-pages-url>
 - Source: https://github.com/<you>/lua-mindscape
 - License: MIT
+- Additional features: inline Lua editor (edit & re-run, inline parse errors),
+  bilingual UI (English / Chinese), installable PWA that also works offline.
 
 ### Why it fits this list
 The list already includes GUI/IDE tooling (e.g. ZeroBrane Studio). Lua Mindscape
@@ -118,6 +125,9 @@ evaluation trace onto its AST in real time. The currently evaluating node is
 highlighted, evaluated sub-expressions show their computed values, call-stack
 frames are color-coded by depth, and variables that reference the same table
 share a color (table aliasing at a glance).
+
+It also includes an inline Lua editor (edit the code and re-run it), a
+bilingual (English/Chinese) UI, and installs as a PWA that works offline.
 
 Currently a UX prototype (single-page web app, simplified JS interpreter).
 The production core is planned in Rust (lossless parser + explicit state
@@ -158,6 +168,9 @@ browser) with three demo programs: a loop, a recursive function, and a
 table-aliasing example. It has a playback timeline (play/pause/step/scrub),
 click-to-jump from AST nodes to the moment they execute, a call-stack panel
 with per-frame colors, and a responsive layout for desktop/tablet/phone.
+The prototype also lets you edit and run Lua right in the page (parse errors
+shown inline), its UI is bilingual (English/Chinese), and it installs as a PWA
+so the demo works offline.
 
 Demo: https://<your-pages-url>
 Source: https://github.com/<you>/lua-mindscape
@@ -201,10 +214,14 @@ What it shows:
 - values computed by each sub-expression (badges on the nodes);
 - call-stack frames, each with its own color, matching the node highlight;
 - loops/recursion "hot spots" (nodes that ran many times);
-- table identity colors, so aliasing (`local b = a`) is visible immediately.
+- table identity colors, so aliasing (`local b = a`) is visible immediately;
+- an inline editor: change the Lua source and re-run it in place.
 
 There's a playback timeline (play/pause/step/scrub) and clicking an AST node
 jumps to the moment it executes.
+
+It's bilingual (English/Chinese) and installs as a PWA, so you can add it to
+your desktop or home screen and use it offline.
 
 It's currently a prototype: single-page web app, simplified JS parser and
 interpreter, just to validate the interaction idea. The production core is
@@ -222,7 +239,7 @@ want to see first — closures, metatables, coroutines, error handling?
 
 ## 四、执行顺序（经你确认后）
 
-1. 本地准备：README / LICENSE / `.gitignore` / git 提交（已完成，见仓库状态）
+1. 本地准备：双语 README（`README.md` / `README.en.md`）、双语设计文档（`docs/DESIGN.md` / `DESIGN.en.md`）、LICENSE、`.gitignore`、PWA 客户端（manifest / sw.js / icons）、git 提交（已完成）
 2. 你执行 `gh auth login`，并确认仓库名与许可
 3. 我创建远端仓库 → push → 打开 GitHub Pages（demo）
 4. 把草稿里的 `<you>` / `<your-pages-url>` 替换为真实地址

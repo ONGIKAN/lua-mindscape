@@ -7,6 +7,8 @@
 
 > - **[Lua Mindscape](https://github.com/ONGIIAN/lua-mindscape)** - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time, making recursion, scope frames and table aliases visible (single-page web prototype; Rust + WebAssembly core planned).
 
+> 中文：本 README。English: [README.en.md](README.en.md)。设计细节：[docs/DESIGN.md](docs/DESIGN.md)（[English](docs/DESIGN.en.md)）。
+
 ---
 
 ## 这是什么
@@ -16,6 +18,7 @@
 > 一个 Lua 运行时，可以实时显示 AST，并且把「执行 / 求值」这件事可视化出来，让人像看大脑思考一样看程序运行。
 
 纯静态页面，双击 `index.html` 即可运行（file:// 也可以，不需要构建、不需要联网）。
+现在还支持**直接编辑代码并运行**、**中英双语界面**、**安装为桌面 / 手机客户端（PWA，离线可用）**。
 
 ![总览](docs/images/hero.png)
 
@@ -50,10 +53,21 @@
 # 方式一：直接打开
 #   双击 index.html（file:// 即可运行）
 
-# 方式二：本地静态服务器（推荐，行为最接近线上）
+# 方式二：本地静态服务器（推荐，行为最接近线上；PWA 安装与离线也需要 http/https）
 python -m http.server 8080
 # 浏览器打开 http://127.0.0.1:8080
 ```
+
+### 作为客户端安装（PWA，适合平板 / 手机）
+
+通过 http(s) 打开后：
+
+- **桌面 Chrome / Edge**：地址栏右侧安装图标，或页面右上角 `⤓` 按钮 → 安装；
+- **Android Chrome**：菜单 → 「安装应用」/「添加到主屏幕」；
+- **iOS Safari**：分享 → 「添加到主屏幕」。
+
+安装后离线可用（Service Worker 缓存应用外壳），窗口独立、无浏览器地址栏。
+正式版桌面 / 移动端会改为 **Tauri 2** 打包原生安装包（详见「正式版架构」）。
 
 ### 操作
 
@@ -65,6 +79,10 @@ python -m http.server 8080
 | 点击语法树节点 | 跳到「执行到该节点」的时刻 |
 | 时间轴滑块 | 任意拖动回放（可直接看某一刻的状态） |
 | 树区域拖动 / 缩放按钮 | 平移、缩放；`⤢` 恢复「跟随当前节点」 |
+| 点击左侧代码 / 工具栏 `✎` | 进入编辑模式，直接改 Lua 代码 |
+| `Ctrl`/`⌘` + `Enter` | 运行编辑中的代码；解析错误会就地提示 |
+| `Esc` | 取消编辑，回到运行中的代码 |
+| 右上角 `EN / 中` | 切换中英文界面 |
 
 三个内置示例：循环求和、递归调用、表别名。输出分别为 **30 / 6 / 12**。
 
@@ -77,21 +95,31 @@ python -m http.server 8080
 | `speed=N` | 事件间隔毫秒数（默认 180） |
 | `scale=0.72` | 初始缩放比例 |
 | `debug=1` | 把相机/布局状态写进 `document.title`（调试用） |
+| `lang=zh\|en` | 界面语言（默认跟随上次选择，存在 localStorage） |
+
+编辑过的代码会保存在浏览器 localStorage（`lua-mindscape:src`），重新打开自动恢复；
+带 `?program=` 时以示例程序为准。`↺ 示例` 可随时恢复内置代码。
 
 ## 目录
 
 ```
 lua-brain-proto/
-├── index.html              单页应用（三栏布局）
-├── style.css               浅色简约主题 + 响应式（≤980px 单列堆叠）
-├── app.js                  简化 Lua 子集解析器 + 显式状态机解释器 + trace 回放渲染
+├── index.html              单页应用（三栏布局，内嵌代码编辑器）
+├── style.css               浅色方形简约主题 + 响应式（≤980px 单列堆叠）
+├── app.js                  简化 Lua 子集解析器 + 显式状态机解释器 + trace 回放 + 编辑器 + i18n
+├── manifest.webmanifest    PWA 应用清单（可安装为桌面/移动客户端）
+├── sw.js                   Service Worker（应用外壳缓存，离线可用）
+├── icons/                  PWA / 桌面图标
 ├── tools/
 │   ├── inspect-trace.js    Node CLI：打印事件流与每步状态（调试解释器）
 │   └── qa.mjs              无头 Edge + CDP：截图 / 断言 / 响应式验收（零依赖）
 ├── docs/
-│   ├── images/             截图（桌面 / 递归 / 别名 / 平板 / 手机）
+│   ├── DESIGN.md           设计文档（中文）
+│   ├── DESIGN.en.md        设计文档（English）
+│   ├── images/             截图（桌面 / 递归 / 别名 / 平板 / 手机 / 编辑器 / 英文界面）
 │   └── community-submission.md   Lua 社区提交材料草稿（awesome-lua / lua-users / lua-l / Reddit）
-└── README.md
+├── README.md               中文文档（本页）
+└── README.en.md            English documentation
 ```
 
 ## 原型验证结果（QA）
@@ -102,11 +130,18 @@ lua-brain-proto/
 - 递归时 4 个栈帧同时存在，`n` 分别为 3 / 2 / 1，颜色与节点光晕一致；
 - 表别名：`a` 与 `b` 显示同一个 `t1` 颜色点，`b.x = 10` 后 `a.x` 同步为 10；
 - 桌面 1600×1000 / 1920×1080、平板 820×1180、手机 390×844 布局均可用；
-- 页面无异常、无 console error；时间轴拖动、单步、点击节点跳转、切示例程序均验证通过。
+- 页面无异常、无 console error；时间轴拖动、单步、点击节点跳转、切示例程序均验证通过；
+- 代码编辑：自定义代码 `local x = 5 / print(x * 2)` 运行成功（19 个 trace 事件），解析错误就地显示；
+- 中英双语：`?lang=en` 下标题 / 品牌 / 提示 / 栈帧文案全部切换，`EN / 中` 按钮可即时切换并记住选择；
+- PWA：manifest 与 Service Worker 注册成功，可安装、离线打开。
 
 | 平板 | 手机 |
 | --- | --- |
 | ![平板](docs/images/tablet.png) | ![手机](docs/images/phone.png) |
+
+| 直接编辑代码并运行 | 英文界面 |
+| --- | --- |
+| ![编辑](docs/images/editor.png) | ![English](docs/images/hero-en.png) |
 
 ### 重新生成截图
 
@@ -153,7 +188,7 @@ node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --out docs/i
 
 ## 路线图
 
-- **P0 概念验证**（已完成，本仓库）：交互模型 + 视觉语言 + 响应式布局。
+- **P0 概念验证**（已完成，本仓库）：交互模型 + 视觉语言 + 响应式布局 + 代码编辑 + 中英双语 + 可安装 PWA 客户端。
 - **P1 语义正确性**：Rust 解释器覆盖常用子集（局部变量、赋值、算术/比较/逻辑、
   if/while/数值 for、函数与递归、表构造/字段访问、字符串拼接、print），
   差分测试接入；WASM + TS 类型；支持运行时输入任意 Lua 代码。

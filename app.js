@@ -720,11 +720,14 @@ const PALETTE = ['#4f46e5', '#0f766e', '#b45309', '#be185d', '#7c3aed', '#0369a1
 const TABLE_PALETTE = ['#4f46e5', '#0f766e', '#b45309', '#be185d', '#7c3aed'];
 
 const KIND_NAME = {
-  Chunk: '程序', Block: '语句块', Local: '局部变量声明', LocalFunction: '局部函数定义',
-  FunctionDecl: '函数定义', Function: '函数体', If: '条件分支', NumFor: '数值 for 循环',
-  While: 'while 循环', Return: '返回', Assign: '赋值', CallStmt: '调用语句', Bin: '二元运算',
-  Un: '一元运算', Num: '数字', Str: '字符串', Bool: '布尔值', Nil: 'nil', Var: '变量引用',
-  Field: '字段访问', Call: '函数调用', Table: '表构造'
+  Chunk: ['程序', 'chunk'], Block: ['语句块', 'block'], Local: ['局部变量声明', 'local declaration'],
+  LocalFunction: ['局部函数定义', 'local function'], FunctionDecl: ['函数定义', 'function definition'],
+  Function: ['函数体', 'function body'], If: ['条件分支', 'if branch'], NumFor: ['数值 for 循环', 'numeric for loop'],
+  While: ['while 循环', 'while loop'], Return: ['返回', 'return'], Assign: ['赋值', 'assignment'],
+  CallStmt: ['调用语句', 'call statement'], Bin: ['二元运算', 'binary operation'], Un: ['一元运算', 'unary operation'],
+  Num: ['数字', 'number'], Str: ['字符串', 'string'], Bool: ['布尔值', 'boolean'], Nil: ['nil', 'nil'],
+  Var: ['变量引用', 'variable'], Field: ['字段访问', 'field access'], Call: ['函数调用', 'function call'],
+  Table: ['表构造', 'table constructor']
 };
 
 const KIND_CAT = {
@@ -734,6 +737,191 @@ const KIND_CAT = {
   Bin: 'op', Un: 'op', Num: 'lit', Str: 'lit', Bool: 'lit', Nil: 'lit',
   Var: 'id', Field: 'id', Call: 'call', Table: 'lit'
 };
+
+/* ---------------- 6.5 国际化（简体中文 / English） ---------------- */
+const LANG_LS_KEY = 'lua-mindscape:lang';
+
+const I18N = {
+  zh: {
+    'doc.title': 'Lua 思维可视化 · 交互式语法树原型',
+    'brand': 'Lua 思维可视化',
+    'tag': '交互原型 v0.1',
+    'chip.loop': '① 循环求和',
+    'chip.fact': '② 递归调用',
+    'chip.alias': '③ 表别名',
+    'pane.code': '源代码',
+    'pane.output': '输出',
+    'pane.tree': '语法树 · 思考轨迹',
+    'pane.state': '运行状态',
+    'hint.code': '点击代码即可编辑 · 靛蓝 = 正在求值 · 琥珀 = 外层栈帧',
+    'hint.codeEdit': '编辑中 · Ctrl+Enter 运行 · Tab 缩进 · Esc 取消',
+    'hint.tree': '方框 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点',
+    'hint.state': '栈帧 · 作用域',
+    'speed': '速度',
+    'btn.reset': '回到开头 (R)',
+    'btn.prev': '上一步 (←)',
+    'btn.play': '播放 / 暂停 (空格)',
+    'btn.next': '下一步 (→)',
+    'btn.zoomOut': '缩小',
+    'btn.zoomIn': '放大',
+    'btn.zoomFit': '回到跟随',
+    'btn.edit': '编辑代码',
+    'btn.editRun': '运行并退出编辑 (Ctrl+Enter)',
+    'btn.run': '▶ 运行',
+    'btn.restore': '↺ 示例',
+    'btn.cancel': '取消编辑 (Esc)',
+    'btn.lang': '切换语言 / Switch language',
+    'aria.samples': '示例程序',
+    'btn.install': '⤓ 安装应用',
+    'btn.install.title': '安装到桌面 / 主屏幕',
+    'install.hint': '在浏览器菜单中选择「安装应用 / 添加到主屏幕」即可安装',
+    'footnote': '原型说明：解析器 / 解释器 / trace 回放均为简化版 JavaScript 实现，仅用于验证交互与视觉；正式版核心为 Rust（full-moon 解析 + 显式状态机解释器）→ WebAssembly。',
+    'frame.main': '主函数',
+    'frame.mainTag': 'main',
+    'frame.idx': '栈帧 #{n}',
+    'noLocals': '（暂无局部变量）',
+    'ready': '准备执行…',
+    'ev.enter': '进入 <b>{kind}</b>',
+    'ev.finish': '完成 <b>{kind}</b>',
+    'ev.value': '求值 <b>{v}</b>',
+    'ev.assign': '赋值 <b>{name}</b> = <b>{v}</b>',
+    'ev.call': '进入函数 <b>{name}(…)</b> · 新栈帧 #{nf}',
+    'ev.ret': '从 <b>{name}(…)</b> 返回 <b>{v}</b>',
+    'ev.iter': '<b>for</b> 迭代：{name} = <b>{v}</b>',
+    'ev.print': '输出 <b>{text}</b>',
+    'ev.end': '程序执行完毕 ✓',
+    'ev.error': '运行时错误：{msg}',
+    'label.callStmt': '调用语句',
+    'label.block': '块',
+    'err.parse': '解析失败：',
+    'err.start': '启动失败：',
+    'install.title': '安装到桌面 / 主屏幕'
+  },
+  en: {
+    'doc.title': 'Lua Mindscape · Interactive AST Prototype',
+    'brand': 'Lua Mindscape',
+    'tag': 'interactive prototype v0.1',
+    'chip.loop': '① Loop sum',
+    'chip.fact': '② Recursion',
+    'chip.alias': '③ Table alias',
+    'pane.code': 'Source code',
+    'pane.output': 'Output',
+    'pane.tree': 'AST · thought trace',
+    'pane.state': 'Runtime state',
+    'hint.code': 'Click code to edit · indigo = evaluating · amber = caller frame',
+    'hint.codeEdit': 'Editing · Ctrl+Enter to run · Tab to indent · Esc to cancel',
+    'hint.tree': 'box = current node · numbers = computed value · ×n = repetition hotspot',
+    'hint.state': 'frames · scopes',
+    'speed': 'Speed',
+    'btn.reset': 'Restart (R)',
+    'btn.prev': 'Previous step (←)',
+    'btn.play': 'Play / pause (Space)',
+    'btn.next': 'Next step (→)',
+    'btn.zoomOut': 'Zoom out',
+    'btn.zoomIn': 'Zoom in',
+    'btn.zoomFit': 'Follow current node',
+    'btn.edit': 'Edit code',
+    'btn.editRun': 'Run and leave editor (Ctrl+Enter)',
+    'btn.run': '▶ Run',
+    'btn.restore': '↺ Sample',
+    'btn.cancel': 'Cancel editing (Esc)',
+    'btn.lang': '切换语言 / Switch language',
+    'aria.samples': 'sample programs',
+    'btn.install': '⤓ Install app',
+    'btn.install.title': 'Install to desktop / home screen',
+    'install.hint': 'Use the browser menu → “Install app / Add to Home Screen” to install',
+    'footnote': 'Prototype note: parser, interpreter and trace playback are simplified JavaScript implementations, used only to validate interaction and visuals. The production core is Rust (full-moon parser + explicit-state interpreter) → WebAssembly.',
+    'frame.main': 'main',
+    'frame.mainTag': 'main',
+    'frame.idx': 'frame #{n}',
+    'noLocals': '(no locals yet)',
+    'ready': 'ready…',
+    'ev.enter': 'enter <b>{kind}</b>',
+    'ev.finish': 'finish <b>{kind}</b>',
+    'ev.value': 'value <b>{v}</b>',
+    'ev.assign': 'assign <b>{name}</b> = <b>{v}</b>',
+    'ev.call': 'call <b>{name}(…)</b> · new frame #{nf}',
+    'ev.ret': 'return from <b>{name}(…)</b> → <b>{v}</b>',
+    'ev.iter': '<b>for</b> iteration: {name} = <b>{v}</b>',
+    'ev.print': 'output <b>{text}</b>',
+    'ev.end': 'program finished ✓',
+    'ev.error': 'runtime error: {msg}',
+    'label.callStmt': 'call stmt',
+    'label.block': 'block',
+    'err.parse': 'parse error: ',
+    'err.start': 'failed to start: ',
+    'install.title': 'Install to desktop / home screen'
+  }
+};
+
+function t(key, params) {
+  const table = I18N[app && app.lang === 'en' ? 'en' : 'zh'] || I18N.zh;
+  let s = table[key] != null ? table[key] : (I18N.zh[key] != null ? I18N.zh[key] : key);
+  if (params) {
+    s = String(s).replace(/\{(\w+)\}/g, (m, k) => (params[k] != null ? params[k] : ''));
+  }
+  return s;
+}
+
+function kindName(k) {
+  const pair = KIND_NAME[k];
+  if (!pair) return '';
+  return app && app.lang === 'en' ? pair[1] : pair[0];
+}
+
+function readSavedLang() {
+  try { return localStorage.getItem(LANG_LS_KEY) || ''; } catch (err) { return ''; }
+}
+function writeSavedLang(lang) {
+  try { localStorage.setItem(LANG_LS_KEY, lang); } catch (err) { /* noop */ }
+}
+
+function applyI18n() {
+  document.documentElement.lang = app.lang === 'en' ? 'en' : 'zh-CN';
+  document.title = t('doc.title');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  const langBtn = $('#btnLang');
+  if (langBtn) {
+    langBtn.textContent = app.lang === 'zh' ? 'EN' : '中';
+    langBtn.title = t('btn.lang');
+  }
+  const installBtn = $('#btnInstall');
+  if (installBtn) installBtn.title = t('btn.install.title');
+  const runBtn = $('#btnRun');
+  if (runBtn) runBtn.textContent = t('btn.run');
+  const restoreBtn = $('#btnRestore');
+  if (restoreBtn) restoreBtn.textContent = t('btn.restore');
+  const editBtn = $('#btnEdit');
+  if (editBtn) editBtn.title = app.editing ? t('btn.editRun') : t('btn.edit');
+  setCodeHint(app.editing ? t('hint.codeEdit') : t('hint.code'));
+  if (app.byId && app.nodeEls) {
+    for (const [id, nd] of app.byId) {
+      const el = app.nodeEls.get(id);
+      if (el) el.title = kindName(nd.k) + '  [' + nd.span[0] + '..' + nd.span[1] + ']';
+    }
+  }
+  const stepLabel = $('#steplabel');
+  if (stepLabel && !app.trace) stepLabel.textContent = t('ready');
+}
+
+function setLang(lang) {
+  app.lang = lang === 'en' ? 'en' : 'zh';
+  writeSavedLang(app.lang);
+  applyI18n();
+  if (app.trace) {
+    buildCode();
+    buildTree();
+    seek(app.traceIdx);
+    applyView();
+  }
+  if (app.editing) positionEditor();
+  applyEditUi(!!app.editing);
+}
 
 function $(sel) { return document.querySelector(sel); }
 function esc(s) {
@@ -763,8 +951,8 @@ function labelOf(n) {
     case 'While': return 'while';
     case 'Return': return 'return';
     case 'Assign': return n.targets.map(t => t.k === 'Var' ? t.name : '.' + t.name).join(',') + ' =';
-    case 'CallStmt': return '调用语句';
-    case 'Block': return '块';
+    case 'CallStmt': return t('label.callStmt');
+    case 'Block': return t('label.block');
     case 'Chunk': return 'chunk';
     default: return n.k;
   }
@@ -775,16 +963,16 @@ function eventLabel(e) {
   const snip = nd ? esc(shorten(app.src.slice(nd.span[0], nd.span[1]).replace(/\s+/g, ' ').trim(), 42)) : '';
   const ssp = snip ? ' <span class="snip">' + snip + '</span>' : '';
   switch (e.t) {
-    case 'ent': return '进入 <b>' + esc(KIND_NAME[nd ? nd.k : ''] || '') + '</b>' + ssp;
-    case 'cls': return '完成 <b>' + esc(KIND_NAME[nd ? nd.k : ''] || '') + '</b>' + ssp;
-    case 'val': return '求值 <b>' + esc(fmtShort(e.v)) + '</b>' + ssp;
-    case 'set': return '赋值 <b>' + esc(e.name) + '</b> = <b>' + esc(fmtShort(e.v)) + '</b>';
-    case 'call': return '进入函数 <b>' + esc(e.name) + '(…)</b> · 新栈帧 #' + e.nf;
-    case 'ret': return '从 <b>' + esc(e.name) + '(…)</b> 返回 <b>' + esc(fmtShort(e.v)) + '</b>';
-    case 'iter': return '<b>for</b> 迭代：' + esc(e.name) + ' = <b>' + esc(fmtShort(e.v)) + '</b>';
-    case 'print': return '输出 <b>' + esc(e.text) + '</b>';
-    case 'end': return '程序执行完毕 ✓';
-    case 'error': return '<span style="color:#ff8ab8">运行时错误：' + esc(e.message) + '</span>';
+    case 'ent': return t('ev.enter', { kind: esc(kindName(nd ? nd.k : '')) }) + ssp;
+    case 'cls': return t('ev.finish', { kind: esc(kindName(nd ? nd.k : '')) }) + ssp;
+    case 'val': return t('ev.value', { v: esc(fmtShort(e.v)) }) + ssp;
+    case 'set': return t('ev.assign', { name: esc(e.name), v: esc(fmtShort(e.v)) });
+    case 'call': return t('ev.call', { name: esc(e.name), nf: e.nf });
+    case 'ret': return t('ev.ret', { name: esc(e.name), v: esc(fmtShort(e.v)) });
+    case 'iter': return t('ev.iter', { name: esc(e.name), v: esc(fmtShort(e.v)) });
+    case 'print': return t('ev.print', { text: esc(e.text) });
+    case 'end': return t('ev.end');
+    case 'error': return '<span class="err-inline">' + t('ev.error', { msg: esc(e.message) }) + '</span>';
     default: return '';
   }
 }
@@ -816,14 +1004,17 @@ const app = {
   suppressClick: false,
   treeW: 0,
   treeH: 0,
-  curId: null
+  curId: null,
+  editing: false,
+  editBackup: null,
+  lang: 'zh'
 };
 
 /* ---------------- 8. 回放状态机 ---------------- */
 function createState() {
   return {
     open: [],
-    framesView: [{ id: 0, name: '主函数', vars: new Map() }],
+    framesView: [{ id: 0, name: t('frame.main'), vars: new Map() }],
     values: new Map(),
     counts: new Map(),
     done: new Set(),
@@ -987,7 +1178,7 @@ function buildTree() {
     el.style.top = n.gy + 'px';
     el.innerHTML = '<span class="lbl">' + esc(labelOf(n)) + '</span>' +
       '<span class="val"></span><span class="heat"></span>';
-    el.title = KIND_NAME[n.k] + '  [' + n.span[0] + '..' + n.span[1] + ']';
+    el.title = kindName(n.k) + '  [' + n.span[0] + '..' + n.span[1] + ']';
     el.addEventListener('click', () => {
       if (app.suppressClick) return;
       jumpToNode(n.id);
@@ -1193,7 +1384,7 @@ function render() {
   const evs = app.trace.events;
   const ev = evs[app.traceIdx];
   const labelEl = $('#steplabel');
-  labelEl.innerHTML = ev ? eventLabel(ev) : '准备执行…';
+  labelEl.innerHTML = ev ? eventLabel(ev) : t('ready');
   $('#counter').textContent = (app.traceIdx + 1) + ' / ' + evs.length;
   const sc = $('#scrub');
   if (document.activeElement !== sc) sc.value = String(app.traceIdx);
@@ -1232,14 +1423,14 @@ function renderFrames(st, nf) {
     box.style.setProperty('--fc', color);
 
     const head = document.createElement('h3');
-    head.innerHTML = '<span>' + esc(i === 0 ? '主函数' : fr.name + '()') + '</span>' +
-      '<span class="fidx">' + (i === 0 ? 'main' : '栈帧 #' + fr.id) + '</span>';
+    head.innerHTML = '<span>' + esc(i === 0 ? t('frame.main') : fr.name + '()') + '</span>' +
+      '<span class="fidx">' + (i === 0 ? t('frame.mainTag') : t('frame.idx', { n: fr.id })) + '</span>';
     box.appendChild(head);
 
     if (!fr.vars.size) {
       const empty = document.createElement('div');
       empty.className = 'empty-row';
-      empty.textContent = '（暂无局部变量）';
+      empty.textContent = t('noLocals');
       box.appendChild(empty);
     } else {
       let count = 0;
@@ -1296,23 +1487,31 @@ function play() {
 }
 
 /* ---------------- 13. 加载与交互 ---------------- */
-function loadProgram(key) {
+/* ---------------- 13. 加载源码 / 代码编辑 ---------------- */
+const EDITOR_LS_KEY = 'lua-mindscape:src';
+
+function setActiveChip(key) {
+  document.querySelectorAll('.programs .chip').forEach(b => {
+    b.classList.toggle('active', b.dataset.program === key);
+  });
+}
+
+function currentChipKey() {
+  const b = document.querySelector('.programs .chip.active');
+  return b ? b.dataset.program : null;
+}
+
+/* 编译并重建整页（源码、树、时间轴、状态） */
+function runSource(src) {
   pause();
-  app.key = key;
-  app.src = PROGRAMS[key].src;
-  const compiled = compileProgram(app.src);
+  app.src = src;
+  const compiled = compileProgram(src);
   app.ast = compiled.ast;
   app.trace = compiled.trace;
   app.byId = compiled.byId;
   app.parentOf = compiled.parentOf;
-
-  document.querySelectorAll('.programs .chip').forEach(b => {
-    b.classList.toggle('active', b.dataset.program === key);
-  });
-
   buildCode();
   buildTree();
-
   app.state = createState();
   app.traceIdx = 0;
   app.userPanned = false;
@@ -1321,6 +1520,155 @@ function loadProgram(key) {
   $('#scrub').max = String(Math.max(0, app.trace.events.length - 1));
   applyView();
   seek(0);
+}
+
+function loadProgram(key) {
+  app.key = key;
+  setActiveChip(key);
+  runSource(PROGRAMS[key].src);
+}
+
+/* ---------- 编辑层（透明 textarea 覆盖在高亮层上，像素对齐） ---------- */
+function readSavedSrc() {
+  try { return localStorage.getItem(EDITOR_LS_KEY) || ''; } catch (err) { return ''; }
+}
+function writeSavedSrc(src) {
+  try { localStorage.setItem(EDITOR_LS_KEY, src); } catch (err) { /* 隐私模式下忽略 */ }
+}
+
+function setCodeHint(text) {
+  const el = $('#codeHint');
+  if (el) el.textContent = text;
+}
+
+function showEditError(msg) {
+  const el = $('#codeError');
+  if (!el) return;
+  if (msg) { el.textContent = msg; el.hidden = false; }
+  else { el.hidden = true; el.textContent = ''; }
+}
+
+function positionEditor() {
+  const code = $('#code');
+  const ta = $('#editor');
+  const wrap = $('.code-wrap');
+  if (!code || !ta || !wrap) return;
+  const toks = code.querySelector('.toks');
+  const cr = code.getBoundingClientRect();
+  const wr = wrap.getBoundingClientRect();
+  const tr = toks ? toks.getBoundingClientRect() : cr;
+  const left = tr.left - wr.left + code.scrollLeft;
+  const top = tr.top - wr.top + code.scrollTop;
+  ta.style.left = left + 'px';
+  ta.style.top = top + 'px';
+  ta.style.width = Math.max(40, wrap.clientWidth - left - 2) + 'px';
+  ta.style.height = Math.max(30, wrap.clientHeight - top - 2) + 'px';
+}
+
+function syncEditorScroll() {
+  const code = $('#code');
+  const ta = $('#editor');
+  if (!code || !ta) return;
+  code.scrollTop = ta.scrollTop;
+  code.scrollLeft = ta.scrollLeft;
+}
+
+/* 输入时重建高亮层：语法着色实时更新（不重跑解释器） */
+function refreshEditorBackdrop() {
+  const ta = $('#editor');
+  if (!ta || !app.editing) return;
+  const st = ta.scrollTop, sl = ta.scrollLeft;
+  app.src = ta.value;
+  buildCode();
+  positionEditor();
+  const code = $('#code');
+  code.scrollTop = st;
+  code.scrollLeft = sl;
+  ta.scrollTop = st;
+  ta.scrollLeft = sl;
+}
+
+function applyEditUi(on) {
+  const pane = $('#codePane');
+  if (pane) pane.classList.toggle('editing', on);
+  const editBtn = $('#btnEdit');
+  editBtn.classList.toggle('on', on);
+  editBtn.title = on ? t('btn.editRun') : t('btn.edit');
+  $('#btnRun').hidden = !on;
+  $('#btnRestore').hidden = !on;
+  $('#btnCancel').hidden = !on;
+  ['#btnReset', '#btnPrev', '#btnPlay', '#btnNext'].forEach(sel => {
+    const b = $(sel);
+    if (b) b.disabled = on;
+  });
+  const sc = $('#scrub');
+  if (sc) sc.disabled = on;
+  setCodeHint(on ? t('hint.codeEdit') : t('hint.code'));
+}
+
+function enterEdit() {
+  if (app.editing) return;
+  pause();
+  app.editing = true;
+  app.editBackup = { src: app.src, idx: app.traceIdx, key: app.key, chip: currentChipKey() };
+  const ta = $('#editor');
+  ta.value = app.src;
+  applyEditUi(true);
+  app.src = ta.value;
+  buildCode();
+  positionEditor();
+  ta.scrollTop = 0;
+  ta.scrollLeft = 0;
+  $('#code').scrollTop = 0;
+  $('#code').scrollLeft = 0;
+  showEditError('');
+  ta.focus();
+  const pos = ta.value.length;
+  try { ta.setSelectionRange(pos, pos); } catch (err) { /* noop */ }
+}
+
+function leaveEdit() {
+  app.editing = false;
+  app.editBackup = null;
+  applyEditUi(false);
+  showEditError('');
+}
+
+function cancelEdit() {
+  if (!app.editing) return;
+  const backup = app.editBackup;
+  leaveEdit();
+  if (backup) {
+    app.key = backup.key;
+    setActiveChip(backup.chip);
+    runSource(backup.src);
+    seek(Math.min(backup.idx, app.trace.events.length - 1));
+  }
+}
+
+function restoreSample() {
+  const ta = $('#editor');
+  if (!ta) return;
+  ta.value = (PROGRAMS[app.key] || PROGRAMS.loop).src;
+  refreshEditorBackdrop();
+  showEditError('');
+  ta.focus();
+}
+
+function runEditor() {
+  const ta = $('#editor');
+  if (!ta || !app.editing) return;
+  const src = ta.value;
+  try {
+    runSource(src);
+  } catch (err) {
+    showEditError(t('err.parse') + (err && err.message ? err.message : String(err)));
+    return;
+  }
+  writeSavedSrc(src);
+  setActiveChip(null);
+  leaveEdit();
+  if (!app.stillMode) play();
 }
 
 function jumpToNode(id) {
@@ -1337,10 +1685,13 @@ function jumpToNode(id) {
   if (target >= 0) { pause(); seek(target); }
 }
 
+let deferredInstallPrompt = null;
+
 function bindControls() {
   document.querySelectorAll('.programs .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       try {
+        if (app.editing) leaveEdit();
         loadProgram(btn.dataset.program);
         if (!app.stillMode) play();
       } catch (err) {
@@ -1366,6 +1717,62 @@ function bindControls() {
   $('#zoomIn').addEventListener('click', () => zoomBy(1.18));
   $('#zoomOut').addEventListener('click', () => zoomBy(1 / 1.18));
   $('#zoomFit').addEventListener('click', () => fitTree());
+
+  /* 编辑入口与编辑层交互 */
+  $('#btnEdit').addEventListener('click', () => (app.editing ? runEditor() : enterEdit()));
+  $('#btnRun').addEventListener('click', () => runEditor());
+  $('#btnCancel').addEventListener('click', () => cancelEdit());
+  $('#btnRestore').addEventListener('click', () => restoreSample());
+
+  const langBtn = $('#btnLang');
+  if (langBtn) langBtn.addEventListener('click', () => setLang(app.lang === 'zh' ? 'en' : 'zh'));
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const b = $('#btnInstall');
+    if (b) b.hidden = false;
+  });
+  const installBtn = $('#btnInstall');
+  if (installBtn) {
+    installBtn.addEventListener('click', () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt = null;
+        installBtn.hidden = true;
+      } else {
+        setCodeHint(t('install.hint'));
+      }
+    });
+  }
+
+  $('#code').addEventListener('click', () => { if (!app.editing) enterEdit(); });
+
+  const editor = $('#editor');
+  let editTimer = 0;
+  editor.addEventListener('input', () => {
+    if (!app.editing) return;
+    clearTimeout(editTimer);
+    editTimer = setTimeout(refreshEditorBackdrop, 160);
+  });
+  editor.addEventListener('scroll', syncEditorScroll);
+  editor.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const ta = e.target;
+      ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end');
+      clearTimeout(editTimer);
+      editTimer = setTimeout(refreshEditorBackdrop, 0);
+    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      clearTimeout(editTimer);
+      runEditor();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEdit();
+    }
+  });
+  window.addEventListener('resize', () => { if (app.editing) positionEditor(); });
 
   const vp = $('#treeviewport');
   vp.addEventListener('pointerdown', (e) => {
@@ -1427,17 +1834,19 @@ function bindControls() {
 }
 
 function showFatal(err) {
+  const msg = err && err.message ? err.message : String(err);
+  showEditError(t('err.start') + msg);
   const codeEl = $('#code');
-  if (codeEl) {
-    codeEl.innerHTML = '<div style="color:#ff8ab8;padding:10px;line-height:1.7">' +
-      '解析/执行失败：<br>' + esc(err && err.message ? err.message : String(err)) + '</div>';
-  }
+  if (codeEl) codeEl.textContent = t('err.start') + msg;
   console.error(err);
 }
 
 /* ---------------- 14. 启动 ---------------- */
 function boot() {
   const params = new URLSearchParams(location.search);
+  const urlLang = params.get('lang');
+  if (urlLang === 'en' || urlLang === 'zh') app.lang = urlLang;
+  else app.lang = readSavedLang() === 'en' ? 'en' : 'zh';
   const key = PROGRAMS[params.get('program')] ? params.get('program') : 'loop';
   const still = params.get('still') === '1';
   const step = Math.floor(Number(params.get('step') || '0')) || 0;
@@ -1454,12 +1863,32 @@ function boot() {
   }
 
   bindControls();
+  applyI18n();
+  const programParam = PROGRAMS[params.get('program')] ? params.get('program') : null;
+  const savedSrc = programParam ? '' : readSavedSrc();
+  let loaded = false;
   try {
-    loadProgram(key);
+    if (programParam) {
+      loadProgram(programParam);
+      loaded = true;
+    } else if (savedSrc) {
+      runSource(savedSrc);
+      app.key = 'loop';
+      setActiveChip(null);
+      loaded = true;
+    }
   } catch (err) {
-    showFatal(err);
-    return;
+    loaded = false;
   }
+  if (!loaded) {
+    try {
+      loadProgram('loop');
+    } catch (err) {
+      showFatal(err);
+      return;
+    }
+  }
+  applyI18n();
   if (params.get('scale')) {
     const s = Number(params.get('scale'));
     if (isFinite(s) && s > 0) {
@@ -1476,8 +1905,20 @@ function boot() {
     setTimeout(() => play(), 700);
   }
   window.__luaBrain = {
-    app, compileProgram, PROGRAMS, tokenize, parse, run, eventLabel, applyEvent, seek, play, pause, fitTree
+    app, compileProgram, PROGRAMS, tokenize, parse, run, eventLabel, applyEvent, seek, play, pause, fitTree,
+    enterEdit, leaveEdit, cancelEdit, runEditor, runSource, setLang, t,
+    isEditing: () => !!app.editing,
+    getEditorValue: () => { const ta = $('#editor'); return ta ? ta.value : ''; },
+    setEditorValue: (v) => {
+      const ta = $('#editor');
+      if (!ta) return;
+      ta.value = String(v == null ? '' : v);
+      refreshEditorBackdrop();
+    }
   };
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* file:// 或浏览器不支持时忽略 */ });
+  }
   window.__appReady = true;
 }
 

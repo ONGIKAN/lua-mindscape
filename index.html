@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#f4f5f7">
-<title>Lua 思维可视化 · UX 概念原型</title>
+<meta name="description" content="Lua Mindscape：像看大脑思考一样看 Lua 求值过程——即时语法树、求值路径、栈帧与值流动。Lua 运行时 × 可视化，Rust 驱动的跨平台应用。">
+<title>Lua 思维可视化 · 交互式语法树原型</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,35 +18,51 @@
   <header class="topbar">
     <div class="brand">
       <span class="pulse-dot" aria-hidden="true"></span>
-      <h1>Lua 思维可视化</h1>
-      <span class="tag">UX 概念原型 v0</span>
+      <h1 data-i18n="brand">Lua 思维可视化</h1>
+      <span class="tag" data-i18n="tag">交互原型 v0.1</span>
     </div>
-    <div class="programs" role="tablist" aria-label="示例程序">
-      <button class="chip active" data-program="loop" role="tab">① 循环求和</button>
-      <button class="chip" data-program="fact" role="tab">② 递归调用</button>
-      <button class="chip" data-program="alias" role="tab">③ 表别名</button>
+    <div class="programs" role="tablist" data-i18n-title="aria.samples" title="示例程序">
+      <button class="chip active" data-program="loop" role="tab" data-i18n="chip.loop">① 循环求和</button>
+      <button class="chip" data-program="fact" role="tab" data-i18n="chip.fact">② 递归调用</button>
+      <button class="chip" data-program="alias" role="tab" data-i18n="chip.alias">③ 表别名</button>
+    </div>
+    <div class="top-actions">
+      <button id="btnLang" class="tbtn lang" data-i18n-title="btn.lang" title="切换语言 / Switch language">EN</button>
+      <button id="btnInstall" class="tbtn install" data-i18n-title="btn.install.title" title="安装到桌面 / 主屏幕">⤓</button>
     </div>
   </header>
 
   <main class="stage">
-    <section class="pane code-pane">
+    <section class="pane code-pane" id="codePane">
       <div class="pane-head">
-        <h2>源代码</h2>
-        <span class="hint">靛蓝 = 正在求值 · 琥珀 = 外层栈帧</span>
+        <h2 data-i18n="pane.code">源代码</h2>
+        <span class="hint" id="codeHint">点击代码即可编辑 · 靛蓝 = 正在求值 · 琥珀 = 外层栈帧</span>
+        <div class="pane-tools">
+          <button id="btnEdit" class="tbtn" data-i18n-title="btn.edit" title="编辑代码">✎</button>
+          <button id="btnRun" class="tbtn run" data-i18n-title="btn.editRun" title="运行 (Ctrl+Enter)" hidden>▶ 运行</button>
+          <button id="btnRestore" class="tbtn" data-i18n-title="btn.restore" title="恢复示例代码" hidden>↺ 示例</button>
+          <button id="btnCancel" class="tbtn" data-i18n-title="btn.cancel" title="取消编辑 (Esc)" hidden>✕</button>
+        </div>
       </div>
-      <div id="code" class="code"></div>
-      <div class="pane-head io-head"><h2>输出</h2></div>
+      <div class="code-wrap">
+        <div id="code" class="code"></div>
+        <textarea id="editor" class="code-editor" spellcheck="false" wrap="off"
+          autocapitalize="off" autocomplete="off" autocorrect="off"
+          aria-label="Lua 代码编辑器"></textarea>
+      </div>
+      <div id="codeError" class="code-error" hidden></div>
+      <div class="pane-head io-head"><h2 data-i18n="pane.output">输出</h2></div>
       <pre id="output" class="output"></pre>
     </section>
 
     <section class="pane tree-pane">
       <div class="pane-head">
-        <h2>语法树 · 思考轨迹</h2>
-        <span class="hint">圆环 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点</span>
+        <h2 data-i18n="pane.tree">语法树 · 思考轨迹</h2>
+        <span class="hint" data-i18n="hint.tree">方框 = 当前节点 · 数字 = 求值结果 · ×n = 重复热点</span>
         <div class="tree-tools">
-          <button id="zoomOut" class="tbtn" title="缩小">－</button>
-          <button id="zoomIn" class="tbtn" title="放大">＋</button>
-          <button id="zoomFit" class="tbtn" title="回到跟随">⤢</button>
+          <button id="zoomOut" class="tbtn" data-i18n-title="btn.zoomOut" title="缩小">－</button>
+          <button id="zoomIn" class="tbtn" data-i18n-title="btn.zoomIn" title="放大">＋</button>
+          <button id="zoomFit" class="tbtn" data-i18n-title="btn.zoomFit" title="回到跟随">⤢</button>
         </div>
       </div>
       <div id="treeviewport" class="tree-viewport"><div id="tree" class="tree"></div></div>
@@ -49,8 +70,8 @@
 
     <aside class="pane state-pane">
       <div class="pane-head">
-        <h2>运行状态</h2>
-        <span class="hint">栈帧 · 作用域</span>
+        <h2 data-i18n="pane.state">运行状态</h2>
+        <span class="hint" data-i18n="hint.state">栈帧 · 作用域</span>
       </div>
       <div id="frames" class="frames"></div>
       <div class="stepmeta">
@@ -60,13 +81,13 @@
   </main>
 
   <footer class="controls">
-    <button id="btnReset" class="btn" title="回到开头 (R)">⟲</button>
-    <button id="btnPrev" class="btn" title="上一步 (←)">◀</button>
-    <button id="btnPlay" class="btn primary" title="播放 / 暂停 (空格)">▶</button>
-    <button id="btnNext" class="btn" title="下一步 (→)">▶|</button>
+    <button id="btnReset" class="btn" data-i18n-title="btn.reset" title="回到开头 (R)">⟲</button>
+    <button id="btnPrev" class="btn" data-i18n-title="btn.prev" title="上一步 (←)">◀</button>
+    <button id="btnPlay" class="btn primary" data-i18n-title="btn.play" title="播放 / 暂停 (空格)">▶</button>
+    <button id="btnNext" class="btn" data-i18n-title="btn.next" title="下一步 (→)">▶|</button>
     <input id="scrub" class="scrub" type="range" min="0" max="0" value="0" aria-label="时间轴">
     <span id="counter" class="counter">1 / 1</span>
-    <label class="speed-wrap">速度
+    <label class="speed-wrap"><span data-i18n="speed">速度</span>
       <select id="speed">
         <option value="360">0.5×</option>
         <option value="180" selected>1×</option>
@@ -75,7 +96,7 @@
       </select>
     </label>
   </footer>
-  <div class="footnote">
+  <div class="footnote" data-i18n="footnote">
     原型说明：解析器 / 解释器 / trace 回放均为简化版 JavaScript 实现，仅用于验证交互与视觉；
     正式版核心为 Rust（full-moon 解析 + 显式状态机解释器）→ WebAssembly。
   </div>
