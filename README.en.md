@@ -6,9 +6,11 @@
 
 **For awesome-lua / community listings:**
 
-> - **[Lua Mindscape](https://github.com/ONGIIAN/lua-mindscape)** - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time, making recursion, scope frames and table aliases visible (single-page web prototype; Rust + WebAssembly core planned).
+> - **[Lua Mindscape](https://github.com/ONGIKAN/lua-mindscape)** - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time, making recursion, scope frames and table aliases visible (single-page web prototype; Rust + WebAssembly core planned).
 
 > 中文: [README.md](README.md). Design notes: [docs/DESIGN.en.md](docs/DESIGN.en.md) ([中文](docs/DESIGN.md)).
+
+**Live demo:** <https://ongikan.github.io/lua-mindscape/> · **GitHub:** <https://github.com/ONGIKAN/lua-mindscape>
 
 ---
 

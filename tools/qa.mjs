@@ -35,11 +35,12 @@ const evals = [];
 for (let i = 0; i < argv.length; i++) if (argv[i] === '--eval') evals.push(argv[i + 1]);
 const extra = arg('extra', '');
 
-const url = 'file://' + ROOT.replace(/\\/g, '/') +
+const localUrl = 'file://' + ROOT.replace(/\\/g, '/') +
   `/index.html?program=${encodeURIComponent(program)}` +
   (still ? '&still=1&step=' + step : '') +
   (scale ? '&scale=' + encodeURIComponent(scale) : '') +
   (extra ? '&' + extra : '');
+const url = arg('url', '') || localUrl;
 
 const port = 9400 + Math.floor(Math.random() * 400);
 const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lua-brain-qa-'));

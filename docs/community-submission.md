@@ -65,8 +65,8 @@ Lua's evaluation trace on top of the AST.
 - Installable as a desktop / mobile client (PWA) and works offline
 - Light, minimal theme; responsive layout for desktop / tablet / phone
 
-Try it: https://<your-pages-url>
-Source: https://github.com/<you>/lua-mindscape
+Try it: https://ongikan.github.io/lua-mindscape/
+Source: https://github.com/ONGIKAN/lua-mindscape
 Note: parser & interpreter here are simplified JS implementations, used only to
 validate the interaction model. The production core is planned in Rust
 (full-moon + explicit-state-machine interpreter) compiled to WebAssembly.
@@ -79,7 +79,7 @@ validate the interaction model. The production core is planned in Rust
 **条目（英文，按列表格式）**：
 
 ```markdown
-- [Lua Mindscape](https://github.com/<you>/lua-mindscape) - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time; makes recursion, scope frames and table aliases visible, with an inline Lua editor, English/Chinese UI and installable web app.
+- [Lua Mindscape](https://github.com/ONGIKAN/lua-mindscape) - An interactive visual debugger that projects Lua's evaluation trace onto the AST in real time; makes recursion, scope frames and table aliases visible, with an inline Lua editor, English/Chinese UI and installable web app.
 ```
 
 **PR 标题**：`Add Lua Mindscape to IDEs and Plugins`
@@ -96,8 +96,8 @@ process: it renders the AST and animates the interpreter's trace on it
 (current node, path highlight, computed values, call-stack frames, table
 aliasing). It's aimed at teaching, debugging and interactive tutorials.
 
-- Live demo: https://<your-pages-url>
-- Source: https://github.com/<you>/lua-mindscape
+- Live demo: https://ongikan.github.io/lua-mindscape/
+- Source: https://github.com/ONGIKAN/lua-mindscape
 - License: MIT
 - Additional features: inline Lua editor (edit & re-run, inline parse errors),
   bilingual UI (English / Chinese), installable PWA that also works offline.
@@ -118,7 +118,7 @@ zero install in the browser.
 ```wiki
 == Lua Mindscape ==
 
-'''URL:''' https://github.com/<you>/lua-mindscape (demo: https://<your-pages-url>)
+'''URL:''' https://github.com/ONGIKAN/lua-mindscape (demo: https://ongikan.github.io/lua-mindscape/)
 
 '''Description:''' An interactive visual debugger that projects a Lua chunk's
 evaluation trace onto its AST in real time. The currently evaluating node is
@@ -141,7 +141,7 @@ machine interpreter) compiled to WebAssembly.
 `LuaProjects` 里的一行：
 
 ```wiki
-* LuaMindscape - visualize Lua's evaluation trace on the AST ([https://github.com/<you>/lua-mindscape github])
+* LuaMindscape - visualize Lua's evaluation trace on the AST ([https://github.com/ONGIKAN/lua-mindscape github])
 ```
 
 ### 3.4 lua-l 公告邮件（英文、纯文本）
@@ -172,8 +172,8 @@ The prototype also lets you edit and run Lua right in the page (parse errors
 shown inline), its UI is bilingual (English/Chinese), and it installs as a PWA
 so the demo works offline.
 
-Demo: https://<your-pages-url>
-Source: https://github.com/<you>/lua-mindscape
+Demo: https://ongikan.github.io/lua-mindscape/
+Source: https://github.com/ONGIKAN/lua-mindscape
 
 The parser/interpreter in the prototype are simplified JavaScript, used
 only to validate the interaction model. The plan for the real version is a
@@ -228,8 +228,8 @@ interpreter, just to validate the interaction idea. The production core is
 planned in Rust (full-moon + an explicit state-machine interpreter emitting
 trace events) compiled to WASM, with differential testing against real Lua.
 
-Demo: https://<your-pages-url>
-Source: https://github.com/<you>/lua-mindscape
+Demo: https://ongikan.github.io/lua-mindscape/
+Source: https://github.com/ONGIKAN/lua-mindscape
 
 Would love feedback: is this useful for teaching/debugging Lua? What would you
 want to see first — closures, metatables, coroutines, error handling?
@@ -242,6 +242,6 @@ want to see first — closures, metatables, coroutines, error handling?
 1. 本地准备：双语 README（`README.md` / `README.en.md`）、双语设计文档（`docs/DESIGN.md` / `DESIGN.en.md`）、LICENSE、`.gitignore`、PWA 客户端（manifest / sw.js / icons）、git 提交（已完成）
 2. 你执行 `gh auth login`，并确认仓库名与许可
 3. 我创建远端仓库 → push → 打开 GitHub Pages（demo）
-4. 把草稿里的 `<you>` / `<your-pages-url>` 替换为真实地址
+4. 把草稿里的 `ONGIKAN` / `https://ongikan.github.io/lua-mindscape/` 替换为真实地址
 5. 按顺序发布：lua-users wiki 项目页 → lua-l 邮件 → Reddit / Discord → awesome-lua PR
 6. 把每次发布结果与链接回填到本文件
