@@ -30,7 +30,7 @@
     </div>
     <div class="top-actions">
       <a id="repoLink" class="tbtn repo" href="https://github.com/ONGIKAN/lua-mindscape" target="_blank" rel="noopener"
-         title="在 GitHub 上查看源码 / View source on GitHub" aria-label="GitHub repository">GitHub ↗</a>
+         title="在 GitHub 上查看源码 / View source on GitHub" aria-label="GitHub repository"><span class="repo-text">GitHub ↗</span><span class="repo-mini" aria-hidden="true">↗</span></a>
       <button id="btnLang" class="tbtn lang" data-i18n-title="btn.lang" title="切换语言 / Switch language">EN</button>
       <button id="btnInstall" class="tbtn install" data-i18n-title="btn.install.title" title="安装到桌面 / 主屏幕">⤓</button>
     </div>
@@ -42,11 +42,11 @@
         <h2 data-i18n="pane.code">源代码</h2>
         <span class="hint" id="codeHint">点击代码即可编辑 · 靛蓝 = 正在求值 · 琥珀 = 外层栈帧</span>
         <div class="pane-tools">
-          <button id="btnNew" class="tbtn text" data-i18n="btn.newText" data-i18n-title="btn.new" title="新建代码">+ 新建</button>
-          <button id="btnImport" class="tbtn text" data-i18n="btn.importText" data-i18n-title="btn.import" title="导入 Lua 文件">导入</button>
+          <button id="btnNew" class="tbtn text" data-i18n="btn.newText" data-i18n-title="btn.new" title="新建代码" data-icon="＋">+ 新建</button>
+          <button id="btnImport" class="tbtn text" data-i18n="btn.importText" data-i18n-title="btn.import" title="导入 Lua 文件" data-icon="⇩">导入</button>
           <button id="btnEdit" class="tbtn" data-i18n-title="btn.edit" title="编辑代码">✎</button>
           <button id="btnRun" class="tbtn run" data-i18n-title="btn.editRun" title="运行 (Ctrl+Enter)" hidden>▶ 运行</button>
-          <button id="btnRestore" class="tbtn" data-i18n-title="btn.restore" title="恢复示例代码" hidden>↺ 示例</button>
+          <button id="btnRestore" class="tbtn" data-i18n-title="btn.restore" title="恢复示例代码" data-icon="↺" hidden>↺ 示例</button>
           <button id="btnCancel" class="tbtn" data-i18n-title="btn.cancel" title="取消编辑 (Esc)" hidden>✕</button>
         </div>
       </div>

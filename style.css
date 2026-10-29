@@ -372,3 +372,80 @@ a.tbtn{display:inline-flex;align-items:center;justify-content:center;text-decora
 @media (max-width:520px){
   .tree-tools .tbtn.wide{padding:0 5px;font-size:10px}
 }
+
+/* ======================================================================
+   手机端紧凑布局（≤520px）
+   目标：减少界面“零碎”，把屏幕高度让给语法树；操作入口改为图标/横滚。
+   ====================================================================== */
+.repo-mini{display:none}
+
+@media (max-width:520px){
+  body{font-size:12px}
+  .app{padding:8px 8px calc(6px + env(safe-area-inset-bottom));gap:6px}
+  .topbar{gap:6px;align-items:center;flex-wrap:wrap;row-gap:5px}
+  .brand{gap:6px}
+  .brand h1{font-size:13.5px}
+  .tag{display:none}
+
+  /* 示例标签：单行横向滚动，不再换行占两行 */
+  .programs{order:3;flex:1 0 100%;margin-top:1px;padding:2px;gap:2px;
+    flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .programs::-webkit-scrollbar{display:none}
+  .chip{padding:4px 8px;font-size:10.5px;white-space:nowrap}
+
+  /* 顶部右侧动作：只留图标 */
+  .top-actions{order:2;gap:4px;margin-left:auto}
+  .top-actions .tbtn{height:22px;min-width:22px;padding:0 6px}
+  .top-actions a.tbtn.repo{padding:0}
+  .top-actions a.tbtn.repo .repo-text{display:none}
+  .top-actions a.tbtn.repo .repo-mini{display:inline;font-size:13px}
+  .top-actions .tbtn.lang{min-width:24px;padding:0 5px;font-size:10.5px}
+
+  /* 屏幕高度重新分配：树占大头 */
+  .stage{grid-template-rows:minmax(0,.62fr) minmax(0,1.92fr) minmax(0,.76fr);gap:6px}
+  .pane{padding:7px 8px}
+  .pane-head{margin-bottom:4px;gap:6px}
+  .pane-head h2{font-size:10px}
+
+  /* 代码工具栏：＋ 新建 / 导入 收成图标，✎ 保留 */
+  .pane-tools{gap:2px}
+  .pane-tools .tbtn{height:22px;min-width:22px;padding:0 5px;font-size:11px}
+  .pane-tools .tbtn.text{width:22px;padding:0;font-size:0}
+  .pane-tools .tbtn.text::before{content:attr(data-icon);font-size:12px;font-family:var(--mono)}
+  .pane-tools .tbtn.run{height:22px;padding:0 6px;font-size:10.5px}
+  .code-wrap{min-height:40px}
+  .app{--code-fs:10.5px;--code-lh:17px}
+  .code{padding:5px 3px}
+  .ln{font-size:9px;margin-right:6px}
+  .io-head{display:none}
+  .output{max-height:30px;min-height:16px;font-size:10px;margin-top:4px;padding:2px 6px}
+  .code-error{max-height:34px;font-size:9.5px}
+
+  /* 树工具栏：布局按钮只显示 ▦ / ◉ */
+  .tree-tools{gap:2px}
+  .tree-tools .tbtn{height:22px;min-width:22px;padding:0 4px;font-size:11px}
+  .tree-tools .tbtn.wide{min-width:22px;padding:0 4px;font-size:0}
+  .tree-tools .tbtn.wide::before{content:attr(data-icon);font-size:12px;font-family:var(--mono)}
+  .tree-viewport{min-height:120px}
+
+  /* 状态栏：只显示当前栈帧 + 一行“另有 N 层” */
+  .state-pane .hint{display:none}
+  .frames{gap:5px}
+  .frame{padding:5px 8px}
+  .frame h3{font-size:10.5px;margin-bottom:3px}
+  .var{font-size:10.5px;padding:1px 0}
+  .frames-more{font-size:10px;color:var(--muted);padding:0 2px}
+  .frames{min-height:0}
+  .stepmeta{margin-top:5px;padding-top:5px}
+  .step-label{font-size:10px;min-height:22px;padding:3px 6px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* 控制栏压缩，脚注在小屏隐藏（GitHub 入口保留在顶栏） */
+  .controls{gap:5px;padding:6px 7px}
+  .btn{height:30px;min-width:30px;padding:0 8px;font-size:11px}
+  .btn.primary{font-size:11px}
+  .scrub{min-width:70px;order:9;flex-basis:100%;height:16px}
+  .counter{min-width:52px;font-size:10.5px}
+  .speed-wrap{font-size:10.5px;gap:4px}
+  #speed{height:26px;font-size:10.5px;padding:0 4px}
+  .footnote{display:none}
+}

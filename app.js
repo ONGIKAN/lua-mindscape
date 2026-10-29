@@ -1013,6 +1013,7 @@ const I18N = {
     'frame.mainTag': 'main',
     'frame.idx': '栈帧 #{n}',
     'noLocals': '（暂无局部变量）',
+    'frames.more': '另有 {n} 层调用栈',
     'ready': '准备执行…',
     'ev.enter': '进入 <b>{kind}</b>',
     'ev.finish': '完成 <b>{kind}</b>',
@@ -1079,6 +1080,7 @@ const I18N = {
     'frame.mainTag': 'main',
     'frame.idx': 'frame #{n}',
     'noLocals': '(no locals yet)',
+    'frames.more': '{n} more frame(s)',
     'ready': 'ready…',
     'ev.enter': 'enter <b>{kind}</b>',
     'ev.finish': 'finish <b>{kind}</b>',
@@ -1120,6 +1122,21 @@ function writeSavedLang(lang) {
   try { localStorage.setItem(LANG_LS_KEY, lang); } catch (err) { /* noop */ }
 }
 
+function isCompactUI() {
+  return typeof window !== 'undefined' && window.matchMedia &&
+    window.matchMedia('(max-width:520px)').matches;
+}
+
+/* 手机端布局按钮只显示图标，把宽度留给缩放控件 */
+function updateLayoutButton() {
+  const btn = $('#btnLayout');
+  if (!btn) return;
+  const icon = app.layoutMode === 'neuron' ? '◉' : '▦';
+  btn.dataset.icon = icon;
+  btn.title = t('btn.layout');
+  btn.textContent = isCompactUI() ? icon : (app.layoutMode === 'neuron' ? t('layout.neuron') : t('layout.grid'));
+}
+
 function applyI18n() {
   document.documentElement.lang = app.lang === 'en' ? 'en' : 'zh-CN';
   document.title = t('doc.title');
@@ -1149,11 +1166,7 @@ function applyI18n() {
       if (el) el.title = kindName(nd.k) + '  [' + nd.span[0] + '..' + nd.span[1] + ']';
     }
   }
-  const layoutBtn = $('#btnLayout');
-  if (layoutBtn) {
-    layoutBtn.textContent = app.layoutMode === 'neuron' ? t('layout.neuron') : t('layout.grid');
-    layoutBtn.title = t('btn.layout');
-  }
+  updateLayoutButton();
   const stepLabel = $('#steplabel');
   if (stepLabel && !app.trace) stepLabel.textContent = t('ready');
 }
@@ -1811,7 +1824,10 @@ function valueHTML(v) {
 function renderFrames(st, nf) {
   const el = $('#frames');
   el.innerHTML = '';
-  for (let i = nf - 1; i >= 0; i--) {
+  const compact = isCompactUI();
+  /* 手机端只展示最内层栈帧，其余折叠成一行摘要，避免状态栏拥挤 */
+  const from = compact ? nf - 1 : 0;
+  for (let i = nf - 1; i >= from; i--) {
     const fr = st.framesView[i];
     const color = PALETTE[i % PALETTE.length];
     const box = document.createElement('div');
@@ -1831,7 +1847,7 @@ function renderFrames(st, nf) {
     } else {
       let count = 0;
       for (const [name, v] of fr.vars) {
-        if (count++ >= 8) break;
+        if (count++ >= (compact ? 4 : 8)) break;
         const row = document.createElement('div');
         row.className = 'var';
         row.innerHTML = '<span class="k">' + esc(name) + '</span><span class="v">' + valueHTML(v) + '</span>';
@@ -1839,6 +1855,12 @@ function renderFrames(st, nf) {
       }
     }
     el.appendChild(box);
+  }
+  if (compact && nf > 1) {
+    const more = document.createElement('div');
+    more.className = 'frames-more';
+    more.textContent = t('frames.more', { n: nf - 1 });
+    el.appendChild(more);
   }
 }
 
@@ -2298,6 +2320,8 @@ function bindControls() {
   });
 
   window.addEventListener('resize', () => {
+    updateLayoutButton();
+    if (app.state) renderFrames(app.state, app.state.framesView.length);
     if (app.editing) return;
     if (!app.userPanned) fitTree();
     else followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
