@@ -19,8 +19,10 @@ A **single-page, zero-dependency front-end prototype** that validates one produc
 > A Lua runtime that shows the AST live, and makes evaluation *legible* — so you can watch a program think.
 
 It is a plain static site: open `index.html` directly (`file://` works, no build, no network).
-It also supports **editing code and running it**, a **bilingual UI (English / Chinese)**, and
-**installing as a desktop / mobile client (PWA, works offline)**.
+It also supports **editing code and running it**, **creating and importing (incl. drag & drop) `.lua` files**,
+a **bilingual UI (English / Chinese)**, and **installing as a desktop / mobile client (PWA, works offline)**.
+The tree uses a **dead-zone camera**: it stays still while the current node is inside the viewport,
+and pans minimally only when it is about to leave.
 
 ![Overview](docs/images/hero-en.png)
 
@@ -83,11 +85,16 @@ The production desktop / mobile builds will ship as **Tauri 2** native apps (see
 | Timeline slider | Scrub to any moment (inspects that state directly) |
 | Drag / zoom buttons on the tree | Pan, zoom; `⤢` resumes "follow the current node" |
 | Click the code pane / `✎` | Enter edit mode and edit Lua directly |
+| Toolbar `＋` / `⇩` | New program / import a `.lua` file; you can also drag a file onto the code pane (runs automatically) |
 | `Ctrl`/`⌘` + `Enter` | Run the edited code; parse errors are shown inline |
 | `Esc` | Cancel editing and restore the running code |
 | `EN / 中` | Switch UI language |
 
 Three built-in samples: loop sum, recursion, table aliasing. Expected output: **30 / 6 / 12**.
+
+The camera follows a **dead zone**: it does not move while the current node is inside the viewport,
+and pans only the minimum needed when the node is about to leave; clicking a node, zooming or `⤢`
+re-centers on purpose. This keeps the view from whipping back and forth during playback.
 
 ### URL parameters (for screenshots and UI automation)
 

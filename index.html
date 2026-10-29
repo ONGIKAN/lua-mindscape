@@ -38,6 +38,8 @@
         <h2 data-i18n="pane.code">源代码</h2>
         <span class="hint" id="codeHint">点击代码即可编辑 · 靛蓝 = 正在求值 · 琥珀 = 外层栈帧</span>
         <div class="pane-tools">
+          <button id="btnNew" class="tbtn" data-i18n-title="btn.new" title="新建代码">＋</button>
+          <button id="btnImport" class="tbtn" data-i18n-title="btn.import" title="导入 Lua 文件">⇩</button>
           <button id="btnEdit" class="tbtn" data-i18n-title="btn.edit" title="编辑代码">✎</button>
           <button id="btnRun" class="tbtn run" data-i18n-title="btn.editRun" title="运行 (Ctrl+Enter)" hidden>▶ 运行</button>
           <button id="btnRestore" class="tbtn" data-i18n-title="btn.restore" title="恢复示例代码" hidden>↺ 示例</button>
@@ -49,6 +51,7 @@
         <textarea id="editor" class="code-editor" spellcheck="false" wrap="off"
           autocapitalize="off" autocomplete="off" autocorrect="off"
           aria-label="Lua 代码编辑器"></textarea>
+        <input id="fileInput" type="file" accept=".lua,.txt,text/plain,application/x-lua" hidden>
       </div>
       <div id="codeError" class="code-error" hidden></div>
       <div class="pane-head io-head"><h2 data-i18n="pane.output">输出</h2></div>

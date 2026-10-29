@@ -769,6 +769,11 @@ const I18N = {
     'btn.editRun': '运行并退出编辑 (Ctrl+Enter)',
     'btn.run': '▶ 运行',
     'btn.restore': '↺ 示例',
+    'btn.new': '新建代码',
+    'btn.import': '导入 Lua 文件',
+    'hint.new': '新程序 · Ctrl+Enter 运行',
+    'hint.imported': '已导入 {name}',
+    'err.file': '文件读取失败',
     'btn.cancel': '取消编辑 (Esc)',
     'btn.lang': '切换语言 / Switch language',
     'aria.samples': '示例程序',
@@ -824,6 +829,11 @@ const I18N = {
     'btn.editRun': 'Run and leave editor (Ctrl+Enter)',
     'btn.run': '▶ Run',
     'btn.restore': '↺ Sample',
+    'btn.new': 'New code',
+    'btn.import': 'Import Lua file',
+    'hint.new': 'New program · Ctrl+Enter to run',
+    'hint.imported': 'imported {name}',
+    'err.file': 'Could not read the file',
     'btn.cancel': 'Cancel editing (Esc)',
     'btn.lang': '切换语言 / Switch language',
     'aria.samples': 'sample programs',
@@ -1149,20 +1159,20 @@ function buildTree() {
   svg.appendChild(gEl);
   treeEl.appendChild(svg);
 
-  const ROW = 46;
-  const COL = 178;
+  const ROW = 38;
+  const COL = 148;
   const all = [];
   let leaf = 0;
 
   (function place(n, depth) {
-    n.gx = depth * COL + 12;
+    n.gx = depth * COL + 10;
     const kids = childrenOf(n);
     if (!kids.length) {
       n.gy = leaf * ROW;
       leaf++;
     } else {
       kids.forEach((c, i) => {
-        if (i > 0) leaf += 0.6; // 兄弟子树之间留呼吸间距，避免不同父节点的分支在视觉上混成一片
+        if (i > 0) leaf += 0.5; // 兄弟子树之间留呼吸间距，避免不同父节点的分支在视觉上混成一片
         place(c, depth + 1);
       });
       n.gy = (kids[0].gy + kids[kids.length - 1].gy) / 2;
@@ -1208,9 +1218,9 @@ function buildTree() {
     const pW = pn._el.offsetWidth || 60;
     const x1 = pn.gx + pW;
     const y1 = pn.gy;
-    const x2 = n.gx - 4;
+    const x2 = n.gx - 3;
     const y2 = n.gy;
-    const dx = Math.max(28, (x2 - x1) * 0.6);
+    const dx = Math.max(22, (x2 - x1) * 0.6);
     const path = document.createElementNS(NS, 'path');
     path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' C ' + (x1 + dx) + ' ' + y1 + ', ' +
       (x2 - dx) + ' ' + y2 + ', ' + x2 + ' ' + y2);
@@ -1226,30 +1236,53 @@ function applyView() {
   el.style.transform = 'translate(' + app.tx.toFixed(1) + 'px,' + app.ty.toFixed(1) + 'px) scale(' + app.scale + ')';
 }
 
-function followTo(nodeId) {
+/* 跟随当前节点：只在节点离开「视口内圈」时做最小幅度平移，避免视角快速来回跳动。
+ * center=true 用于节点点击 / 缩放复位等明确想居中的场景。 */
+function followTo(nodeId, center) {
   if (app.userPanned) return;
   const vp = $('#treeviewport');
   if (!vp) return;
   const W = vp.clientWidth;
   const H = vp.clientHeight;
-  if (W < 20 || H < 20) return;
+  if (W < 40 || H < 40) return;
   const n = (nodeId != null && app.byId.get(nodeId)) || app.ast;
   if (!n) return;
   const s = app.scale;
-  const nw = n._el ? n._el.offsetWidth : 60;
-  /* 把当前节点放在「视口横向 45% / 纵向 50%」附近 */
-  let tx = W * 0.45 - (n.gx + nw / 2) * s;
-  let ty = H * 0.5 - n.gy * s;
+  const nw = (n._el && n._el.offsetWidth) || 70;
+  const nh = (n._el && n._el.offsetHeight) || 26;
+  const sx = (n.gx + nw / 2) * s + app.tx;
+  const sy = (n.gy + nh / 2) * s + app.ty;
+  const padX = Math.min(W * 0.16, 80) + (nw * s) / 2;
+  const padY = Math.min(H * 0.16, 70) + (nh * s) / 2;
+  const dl = padX;
+  const dr = W - padX;
+  const dt = padY;
+  const db = H - padY;
+  let dx = 0;
+  let dy = 0;
+  if (center) {
+    dx = W / 2 - sx;
+    dy = H / 2 - sy;
+  } else {
+    if (dl > dr) dx = W / 2 - sx;
+    else if (sx < dl) dx = dl - sx;
+    else if (sx > dr) dx = dr - sx;
+    if (dt > db) dy = H / 2 - sy;
+    else if (sy < dt) dy = dt - sy;
+    else if (sy > db) dy = db - sy;
+  }
+  if (!dx && !dy) return;
   const tw = app.treeW * s;
   const th = app.treeH * s;
-  /* 限制：树比视口大时，允许最多 64px 的越界留白，保证当前节点一定可见 */
-  const MARGIN = 64;
-  if (tw <= W - 16) tx = (W - tw) / 2;
-  else tx = Math.min(MARGIN, Math.max(W - tw - MARGIN, tx));
-  if (th <= H - 16) ty = (H - th) / 2;
-  else ty = Math.min(MARGIN, Math.max(H - th - MARGIN, ty));
-  app.tx = tx;
-  app.ty = ty;
+  const E = 36; // 树比视口大时允许的越界留白
+  if (dx !== 0) {
+    if (tw > W - 2 * E) app.tx = Math.max(W - tw - E, Math.min(E, app.tx + dx));
+    else app.tx = (W - tw) / 2;
+  }
+  if (dy !== 0) {
+    if (th > H - 2 * E) app.ty = Math.max(H - th - E, Math.min(E, app.ty + dy));
+    else app.ty = (H - th) / 2;
+  }
   applyView();
 }
 
@@ -1263,14 +1296,14 @@ function fitTree() {
   app.scale = Math.max(0.35, Math.min(1, Math.round(s * 100) / 100));
   app.userPanned = false;
   $('#tree').classList.remove('nofollow');
-  followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
+  followTo(app.curId != null ? app.curId : (app.ast && app.ast.id), true);
 }
 
 function zoomBy(f) {
   app.scale = Math.max(0.35, Math.min(1.8, Math.round(app.scale * f * 100) / 100));
   app.userPanned = false;
   $('#tree').classList.remove('nofollow');
-  followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
+  followTo(app.curId != null ? app.curId : (app.ast && app.ast.id), true);
 }
 
 /* ---------------- 11. 主渲染 ---------------- */
@@ -1671,6 +1704,53 @@ function runEditor() {
   if (!app.stillMode) play();
 }
 
+const NEW_TEMPLATE = [
+  'local n = 0',
+  'for i = 1, 5 do',
+  '  n = n + i',
+  'end',
+  'print(n)'
+].join('\n');
+
+function newProgram() {
+  pause();
+  if (!app.editing) enterEdit();
+  const ta = $('#editor');
+  if (!ta) return;
+  ta.value = NEW_TEMPLATE;
+  refreshEditorBackdrop();
+  showEditError('');
+  app.key = null;
+  setActiveChip(null);
+  setCodeHint(t('hint.new'));
+  ta.focus();
+  try { ta.setSelectionRange(0, 0); } catch (err) { /* noop */ }
+}
+
+function importText(text, name) {
+  if (text == null) return;
+  pause();
+  if (!app.editing) enterEdit();
+  const ta = $('#editor');
+  if (!ta) return;
+  ta.value = String(text);
+  refreshEditorBackdrop();
+  showEditError('');
+  app.key = null;
+  setActiveChip(null);
+  setCodeHint(t('hint.imported', { name: esc(name || 'code.lua') }));
+  ta.focus();
+  runEditor();
+}
+
+function readFileIntoEditor(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => importText(String(reader.result == null ? '' : reader.result), file.name);
+  reader.onerror = () => showEditError(t('err.file'));
+  reader.readAsText(file);
+}
+
 function jumpToNode(id) {
   const evs = app.trace.events;
   let target = -1;
@@ -1682,7 +1762,13 @@ function jumpToNode(id) {
       if (evs[i].id === id) { target = i; break; }
     }
   }
-  if (target >= 0) { pause(); seek(target); }
+  if (target >= 0) {
+    pause();
+    seek(target);
+    app.userPanned = false;
+    $('#tree').classList.remove('nofollow');
+    followTo(id, true);
+  }
 }
 
 let deferredInstallPrompt = null;
@@ -1717,6 +1803,34 @@ function bindControls() {
   $('#zoomIn').addEventListener('click', () => zoomBy(1.18));
   $('#zoomOut').addEventListener('click', () => zoomBy(1 / 1.18));
   $('#zoomFit').addEventListener('click', () => fitTree());
+
+  /* 新建 / 导入 */
+  $('#btnNew').addEventListener('click', newProgram);
+  $('#btnImport').addEventListener('click', () => { const fi = $('#fileInput'); if (fi) fi.click(); });
+  const fileInput = $('#fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (f) readFileIntoEditor(f);
+      fileInput.value = '';
+    });
+  }
+  const codePane = $('#codePane');
+  if (codePane) {
+    ['dragenter', 'dragover'].forEach(ev => codePane.addEventListener(ev, (e) => {
+      e.preventDefault();
+      codePane.classList.add('drop');
+    }));
+    codePane.addEventListener('dragleave', (e) => {
+      if (e.target === codePane) codePane.classList.remove('drop');
+    });
+    codePane.addEventListener('drop', (e) => {
+      e.preventDefault();
+      codePane.classList.remove('drop');
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) readFileIntoEditor(f);
+    });
+  }
 
   /* 编辑入口与编辑层交互 */
   $('#btnEdit').addEventListener('click', () => (app.editing ? runEditor() : enterEdit()));
@@ -1778,6 +1892,7 @@ function bindControls() {
   vp.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.node')) return;
     app.dragging = { x: e.clientX, y: e.clientY, tx: app.tx, ty: app.ty, moved: 0 };
+    $('#tree').classList.add('nofollow');
     try { vp.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
   });
   vp.addEventListener('pointermove', (e) => {
@@ -1798,6 +1913,7 @@ function bindControls() {
     if (app.dragging && app.dragging.moved > 4) {
       setTimeout(() => { app.suppressClick = false; }, 0);
     }
+    if (!app.userPanned) $('#tree').classList.remove('nofollow');
     app.dragging = null;
   };
   vp.addEventListener('pointerup', endDrag);
@@ -1894,7 +2010,7 @@ function boot() {
     if (isFinite(s) && s > 0) {
       app.scale = Math.max(0.35, Math.min(1.8, s));
       app.userPanned = false;
-      followTo(app.curId != null ? app.curId : (app.ast && app.ast.id));
+      followTo(app.curId != null ? app.curId : (app.ast && app.ast.id), true);
     }
   }
   if (still) {
@@ -1907,6 +2023,7 @@ function boot() {
   window.__luaBrain = {
     app, compileProgram, PROGRAMS, tokenize, parse, run, eventLabel, applyEvent, seek, play, pause, fitTree,
     enterEdit, leaveEdit, cancelEdit, runEditor, runSource, setLang, t,
+    newProgram, importText,
     isEditing: () => !!app.editing,
     getEditorValue: () => { const ta = $('#editor'); return ta ? ta.value : ''; },
     setEditorValue: (v) => {

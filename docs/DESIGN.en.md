@@ -77,8 +77,11 @@ Style: light, square, thin borders, one accent color — a *teaching dashboard*,
 - **The tree is a timeline**: click any node to jump to its next execution event.
 - **Editable code**: the source pane can be edited and run (prototype uses a highlighted layer plus a
   transparent textarea, keeping syntax colors and caret alignment); parse errors are shown inline.
-- **Camera follow**: centers the current node with bounds + margin; panning/zooming pauses follow,
-  `⤢` resumes; on small screens the active code line is scrolled into view.
+- **New / import**: `＋` creates a template; `⇩` picks a `.lua` file (or drag it onto the code pane)
+  and compiles/runs it immediately; parse errors are shown inline.
+- **Camera follow (dead zone)**: stays still while the current node is inside the viewport, pans the
+  minimum needed near the edges; clicking a node, zooming or `⤢` re-centers. Panning/zooming pauses
+  follow; on small screens the active code line is scrolled into view.
 - **Bilingual**: UI strings and node kind names come from an i18n dictionary; `EN / 中` persists.
 
 ## 6. Layout & rendering

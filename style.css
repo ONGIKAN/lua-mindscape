@@ -151,7 +151,7 @@ h1,h2{font-family:var(--sans)}
   touch-action:none;
 }
 .tree-viewport:active{cursor:grabbing}
-.tree{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .32s cubic-bezier(.22,.61,.36,1)}
+.tree{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .22s cubic-bezier(.22,.61,.36,1)}
 .tree.nofollow{transition:none}
 svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .e{fill:none;stroke:#ccd3de;stroke-width:1.2;transition:stroke .15s,opacity .15s}
@@ -160,10 +160,10 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .e.parent{stroke:#eab861;stroke-width:1.4;stroke-dasharray:3 3}
 
 .node{
-  position:absolute;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;
+  position:absolute;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 8px;
   border-radius:0;background:var(--surface);
   border:1px solid #ccd3dd;color:#2b3442;
-  font-size:12px;line-height:1;white-space:nowrap;
+  font-size:11.5px;line-height:1;white-space:nowrap;
   box-shadow:0 1px 2px rgba(16,24,40,.04);
   transform:translateY(-50%);
   transition:background .15s,border-color .15s,color .15s,box-shadow .15s,opacity .15s,transform .12s;
@@ -177,8 +177,8 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .node.c-call .lbl{color:var(--amber)}
 .node.c-stmt .lbl{color:#7c3aed}
 .node.c-blk .lbl{color:#6b7280;font-weight:500}
-.node .val{color:#0b6b5f;font-size:11px;font-weight:600}
-.node .heat{color:#b45309;font-size:10px;font-weight:700}
+.node .val{color:#0b6b5f;font-size:10.5px;font-weight:600}
+.node .heat{color:#b45309;font-size:9.5px;font-weight:700}
 
 .node.n-pending{opacity:.62;border-color:#e3e7ee;border-style:dashed;background:#fefefe}
 .node.n-done{opacity:1;border-color:#dbe0e8;background:#fff}
@@ -305,7 +305,11 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .top-actions .tbtn.lang{font:600 11.5px var(--mono);color:var(--accent)}
 .top-actions .tbtn.install{color:var(--text-2)}
 .pane-tools .tbtn.run{height:24px}
+.code-pane.drop{outline:2px dashed var(--accent);outline-offset:-3px;background:#f7f8ff}
+.code-pane.drop .code,.code-pane.drop .code-editor{pointer-events:none}
 @media (max-width:520px){
   .top-actions .tbtn.lang{min-width:26px;padding:0 6px;font-size:11px}
   .top-actions .tbtn.install{display:none}
+  .pane-tools .tbtn{min-width:24px;padding:0 6px}
+  .pane-tools .tbtn.run{padding:0 7px}
 }
