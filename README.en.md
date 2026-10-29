@@ -54,6 +54,23 @@ Visual mapping:
 | --- | --- |
 | ![Recursion](docs/images/recursion.png) | ![Aliasing](docs/images/alias.png) |
 
+## Supported language subset
+
+This prototype is not full Lua 5.4, but it covers enough to run real algorithm code
+(the built-in ④ N-Queens sample is a working bitwise backtracking solver):
+
+- **Statements**: `local`, assignment (multiple targets), `if / elseif / else`, `while`, `do … end`,
+  numeric `for`, `return`, function definitions (`function` / `local function`), call statements, semicolons;
+- **Expressions**: arithmetic `+ - * / // % ^`, comparisons, `and / or / not`, string concat `..`,
+  unary `-` `#` `~`, bitwise `& | ~ << >>` (Lua 5.3+ semantics), parentheses, table constructors,
+  field access, and **indexing `t[k]`**;
+- **Standard library**: `print`, `tonumber`, `tostring`, `type`, `assert`, `error`, `math.*`, `string.*`,
+  `table.insert` / `table.concat`, plus the global `arg` (`arg[1] = '6'` in the prototype, so N-Queens solves 6×6);
+- Parse errors report **line / column + nearby source**, shown inline in the code pane.
+
+Not supported yet (the Rust interpreter will extend this): `repeat/until`, generic `for … in`,
+metatables / `:` method sugar, `goto`, `coroutine`, varargs `...`, multiple return values, `require`.
+
 ## Quick start
 
 ```bash
@@ -92,7 +109,12 @@ The production desktop / mobile builds will ship as **Tauri 2** native apps (see
 | `Esc` | Cancel editing and restore the running code |
 | `EN / 中` | Switch UI language |
 
-Three built-in samples: loop sum, recursion, table aliasing. Expected output: **30 / 6 / 12**.
+Four built-in samples: loop sum, recursion, table aliasing, and **N-Queens (bitwise backtracking)**.
+Expected output: **30 / 6 / 12 / 4**. The N-Queens sample is real algorithm code — recursion + bitwise
+operators + indexing + the standard library — and shows off recursive frames, repetition hotspots and
+bitwise expression trees at the same time.
+
+![N-Queens: bitwise backtracking](docs/images/queens.png)
 
 The camera does **fit-the-tree first, then follows a dead zone**: on load / run it scales and centers
 the whole tree inside the tree panel; during playback the view does not move at all while the current
@@ -103,7 +125,7 @@ zooming or `⤢` re-centers on purpose.
 
 | Parameter | Meaning |
 | --- | --- |
-| `program=loop\|fact\|alias` | Pick a sample program |
+| `program=loop\|fact\|alias\|queens` | Pick a sample program |
 | `still=1&step=N` | Render statically at event N (no auto-play; for screenshots) |
 | `speed=N` | Milliseconds per event (default 180) |
 | `scale=0.72` | Initial zoom |
@@ -139,12 +161,17 @@ lua-brain-proto/
 
 Verified in a real browser with `tools/qa.mjs` (headless Edge + Chrome DevTools Protocol):
 
-- Semantics of the three samples: loop → `30`, fact → `6`, alias → `12` (77 / 85 / 39 trace events);
+- Semantics of the four samples: loop → `30`, fact → `6`, alias → `12`, queens → `4`
+  (77 / 85 / 39 / 14,952 trace events);
 - Recursion: 4 frames alive at once, `n` = 3 / 2 / 1, halo colors match frame colors;
 - Aliasing: `a` and `b` show the same `t1` color dot; after `b.x = 10`, `a.x` is 10;
+- N-Queens (real bitwise backtracking with `arg` / `tonumber` / `assert` / indexing / `& | ~ << >>`)
+  parses and runs correctly; 3 recursive frames visible with their `cols / diag1 / diag2 / avail / bit`
+  values; output `4`;
 - Layouts work at 1600×1000 / 1920×1080 desktop, 820×1180 tablet, 390×844 phone;
 - No exceptions, no console errors; scrubbing, stepping, node-jump and sample switching all pass;
 - Code editing: custom code `local x = 5 / print(x * 2)` runs (19 trace events), parse errors are inline;
+  pasting the whole N-Queens program also runs;
 - Bilingual: with `?lang=en` the title / brand / hints / stack texts all switch; the `EN / 中` toggle persists;
 - PWA: manifest + Service Worker register successfully; installable and offline-capable.
 
@@ -159,7 +186,8 @@ Verified in a real browser with `tools/qa.mjs` (headless Edge + Chrome DevTools 
 ### Regenerate screenshots
 
 ```bash
-node tools/qa.mjs --program loop --step 45 --width 1920 --height 1080 --scale 0.8 --out docs/images/hero.png
+node tools/qa.mjs --program loop --step 45 --width 1920 --height 1080 --out docs/images/hero.png
+node tools/qa.mjs --program queens --step 320 --width 1600 --height 1000 --out docs/images/queens.png
 node tools/qa.mjs --program fact --step 60 --out docs/images/recursion.png
 node tools/qa.mjs --program alias --step 25 --out docs/images/alias.png
 node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --out docs/images/phone.png

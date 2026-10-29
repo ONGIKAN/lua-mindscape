@@ -314,3 +314,13 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
   .pane-tools .tbtn{min-width:24px;padding:0 6px}
   .pane-tools .tbtn.run{padding:0 7px}
 }
+
+
+/* ---------- 顶部 GitHub 互链 / 页脚链接 ---------- */
+a.tbtn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;line-height:1}
+.top-actions a.tbtn.repo{font-family:var(--mono);font-size:11px;letter-spacing:.2px;color:var(--text-2)}
+.top-actions a.tbtn.repo:hover{color:var(--accent);border-color:#c7cdf8;background:var(--accent-soft)}
+.footnote{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.footnote .foot-sep{color:var(--line-strong)}
+.footnote a.foot-link{color:var(--accent);text-decoration:none;white-space:nowrap}
+.footnote a.foot-link:hover{text-decoration:underline}

@@ -50,7 +50,8 @@ function tokenize(src) {
       continue;
     }
     const two = src.substr(i, 2);
-    if (two === '==' || two === '~=' || two === '<=' || two === '>=' || two === '..' || two === '//') {
+    if (two === '==' || two === '~=' || two === '<=' || two === '>=' || two === '..' || two === '//' ||
+        two === '<<' || two === '>>') {
       toks.push({ type: 'op', value: two, start: i, end: i + 2 });
       i += 2;
       continue;
@@ -66,9 +67,10 @@ function tokenize(src) {
 const BIN_PREC = {
   'or': 1, 'and': 2,
   '<': 3, '>': 3, '<=': 3, '>=': 3, '~=': 3, '==': 3,
-  '..': 4, '+': 5, '-': 5,
-  '*': 6, '/': 6, '//': 6, '%': 6,
-  '^': 8
+  '|': 4, '~': 5, '&': 6, '<<': 7, '>>': 7,
+  '..': 8, '+': 9, '-': 9,
+  '*': 10, '/': 10, '//': 10, '%': 10,
+  '^': 12
 };
 
 function parse(src) {
@@ -84,7 +86,11 @@ function parse(src) {
   const isName = () => { const t = peek(); return t.type === 'name' && !KEYWORDS.has(t.value); };
   const fail = (msg) => {
     const t = peek();
-    throw new Error(msg + '（字符 ' + t.start + ' 附近：' + JSON.stringify(src.slice(t.start, t.start + 14)) + '）');
+    const upto = src.slice(0, t.start);
+    const line = upto.split('\n').length;
+    const col = t.start - upto.lastIndexOf('\n');
+    throw new Error(msg + '（第 ' + line + ' 行第 ' + col + ' 列，字符 ' + t.start +
+      '，附近：' + JSON.stringify(src.slice(t.start, t.start + 14)) + '）');
   };
   const next = () => { const t = peek(); p++; return t; };
   const expectOp = (v) => { if (!isOp(v)) fail('期望 "' + v + '"'); return next(); };
@@ -132,6 +138,7 @@ function parse(src) {
     if (isKw('if')) return ifStmt();
     if (isKw('for')) return numForStmt();
     if (isKw('while')) return whileStmt();
+    if (isKw('do')) return doStmt();
     if (isKw('return')) {
       const start = t.start; p++;
       let exprs = [];
@@ -199,6 +206,14 @@ function parse(src) {
     return mk('While', start, endTok.end, { cond, body });
   }
 
+  function doStmt() {
+    const start = peek().start;
+    expectKw('do');
+    const body = block(['end']);
+    const endTok = expectKw('end');
+    return mk('Do', start, endTok.end, { body });
+  }
+
   function funcBody(fnStart, name) {
     expectOp('(');
     const params = [];
@@ -233,9 +248,9 @@ function parse(src) {
   }
 
   function unary() {
-    if (isOp('-') || isOp('#') || isKw('not')) {
+    if (isOp('-') || isOp('#') || isOp('~') || isKw('not')) {
       const t = next();
-      const e = expr(7);
+      const e = expr(11);
       return mk('Un', t.start, e.span[1], { op: t.value, e });
     }
     return suffixed();
@@ -251,6 +266,11 @@ function parse(src) {
       } else if (isOp('(')) {
         const args = argList();
         e = mk('Call', e.span[0], toks[p - 1].end, { fn: e, args });
+      } else if (isOp('[')) {
+        p++;
+        const key = expr(0);
+        const close = expectOp(']');
+        e = mk('Index', e.span[0], close.end, { obj: e, key });
       } else break;
     }
     return e;
@@ -330,8 +350,10 @@ function childrenOf(n) {
     case 'Bin': return [n.l, n.r];
     case 'Un': return [n.e];
     case 'Field': return [n.obj];
+    case 'Index': return [n.obj, n.key];
     case 'Call': return [n.fn].concat(n.args);
     case 'Table': return n.entries.map(e => e.value);
+    case 'Do': return [n.body];
     default: return [];
   }
 }
@@ -397,12 +419,12 @@ function run(ast, src, opts) {
   let depth = 0;
 
   const globals = { vars: new Map(), parent: null };
-  globals.vars.set('print', { t: 'builtin', name: 'print' });
+  installStdLibs();
 
   function ev(e) {
     e.f = frame;
     events.push(e);
-    if (events.length > maxEvents) throw new Error('事件数超过原型上限（' + maxEvents + '）');
+    if (events.length > maxEvents) throw new Error('事件数超过原型上限（' + maxEvents + '）——把示例调小一点（比如 n 改小）或减少循环次数再试');
   }
 
   function lookup(env, name) {
@@ -451,6 +473,11 @@ function run(ast, src, opts) {
       case '>': return a > b;
       case '<=': return a <= b;
       case '>=': return a >= b;
+      case '&': return numify(a) & numify(b);
+      case '|': return numify(a) | numify(b);
+      case '~': return numify(a) ^ numify(b);
+      case '<<': return numify(a) << numify(b);
+      case '>>': return numify(a) >>> numify(b);
       default: throw new Error('未知运算符 ' + op);
     }
   }
@@ -460,6 +487,157 @@ function run(ast, src, opts) {
   }
   function makeFn(fnNode, closure) {
     return { t: 'fn', name: fnNode.name, params: fnNode.params, body: fnNode.body, closure };
+  }
+
+  function luaTypeName(v) {
+    if (v === null || v === undefined) return 'nil';
+    if (typeof v === 'number') return 'number';
+    if (typeof v === 'string') return 'string';
+    if (typeof v === 'boolean') return 'boolean';
+    if (v && v.t === 'table') return 'table';
+    if (v && (v.t === 'fn' || v.t === 'builtin')) return 'function';
+    return 'userdata';
+  }
+  function arrayLen(tb) {
+    let i = 0;
+    while (Object.prototype.hasOwnProperty.call(tb.map, i + 1)) i++;
+    return i;
+  }
+  function lenOf(v) {
+    if (typeof v === 'string') return v.length;
+    if (v && v.t === 'table') return arrayLen(v);
+    throw new Error('不能对 ' + fmtVal(v) + ' 取长度（#）');
+  }
+  function tableGet(o, key) {
+    if (o === null || o === undefined) throw new Error('尝试索引 nil');
+    if (!o || o.t !== 'table') throw new Error('尝试索引非表值（' + fmtVal(o) + '）');
+    if (key === null || key === undefined) throw new Error('尝试用 nil 作为表下标');
+    return Object.prototype.hasOwnProperty.call(o.map, key) ? o.map[key] : null;
+  }
+  function tableSet(o, key, val) {
+    if (!o || o.t !== 'table') throw new Error('不能给非表值赋值');
+    o.map[key] = val;
+    if (!o.order) o.order = [];
+    if (o.order.indexOf(key) < 0) {
+      if (typeof key === 'number' && o.order.every(k => typeof k === 'number')) {
+        o.order.push(key);
+        o.order.sort((x, y) => x - y);
+      } else {
+        o.order.push(key);
+      }
+    }
+  }
+  function targetName(tgt) {
+    if (tgt.k === 'Var') return tgt.name;
+    if (tgt.k === 'Field') return fieldPath(tgt);
+    if (tgt.k === 'Index') return (tgt.obj && tgt.obj.k === 'Var' ? tgt.obj.name : '?') + '[…]';
+    return '?';
+  }
+  function makeLib(def) {
+    const tb = { t: 'table', id: ++tableSeq, map: Object.create(null), order: [] };
+    for (const k of Object.keys(def)) {
+      tb.map[k] = { t: 'builtin', name: k, fn: def[k] };
+      tb.order.push(k);
+    }
+    return tb;
+  }
+  function installStdLibs() {
+    globals.vars.set('print', { t: 'builtin', name: 'print' });
+    globals.vars.set('tonumber', { t: 'builtin', name: 'tonumber', fn: (a) => {
+      const v = a[0];
+      if (v === null || v === undefined) return null;
+      if (typeof v === 'number') return v;
+      if (typeof v === 'string') {
+        const s = v.trim();
+        if (s === '') return null;
+        const n = Number(s);
+        return isNaN(n) ? null : n;
+      }
+      return null;
+    } });
+    globals.vars.set('tostring', { t: 'builtin', name: 'tostring', fn: (a) => toStringLua(a[0]) });
+    globals.vars.set('type', { t: 'builtin', name: 'type', fn: (a) => luaTypeName(a[0]) });
+    globals.vars.set('assert', { t: 'builtin', name: 'assert', fn: (a) => {
+      if (!truthy(a[0])) throw new Error(a[1] != null ? toStringLua(a[1]) : 'assertion failed!');
+      return a[0];
+    } });
+    globals.vars.set('error', { t: 'builtin', name: 'error', fn: (a) => { throw new Error(toStringLua(a[0])); } });
+    globals.vars.set('math', makeLib({
+      floor: (a) => Math.floor(numify(a[0])),
+      ceil: (a) => Math.ceil(numify(a[0])),
+      abs: (a) => Math.abs(numify(a[0])),
+      sqrt: (a) => Math.sqrt(numify(a[0])),
+      max: (a) => Math.max.apply(null, a.map((x) => numify(x))),
+      min: (a) => Math.min.apply(null, a.map((x) => numify(x))),
+      random: (a) => {
+        if (!a.length) return Math.random();
+        if (a.length === 1) return 1 + Math.floor(Math.random() * numify(a[0]));
+        const lo = numify(a[0]);
+        const hi = numify(a[1]);
+        return lo + Math.floor(Math.random() * (hi - lo + 1));
+      }
+    }));
+    globals.vars.set('string', makeLib({
+      format: (a) => {
+        const fmt = toStringLua(a[0]);
+        let out = '';
+        let argi = 1;
+        for (let i = 0; i < fmt.length; i++) {
+          if (fmt[i] === '%' && i + 1 < fmt.length) {
+            const c = fmt[++i];
+            if (c === '%') { out += '%'; continue; }
+            const v = a[argi++];
+            if (c === 'd' || c === 'i') out += String(Math.trunc(numify(v)));
+            else if (c === 'f') out += String(numify(v));
+            else if (c === 'x') out += Math.trunc(numify(v)).toString(16);
+            else if (c === 'q') out += '"' + toStringLua(v) + '"';
+            else out += toStringLua(v);
+          } else out += fmt[i];
+        }
+        return out;
+      },
+      sub: (a) => {
+        const s = toStringLua(a[0]);
+        const i = Math.trunc(numify(a[1]));
+        const j = a.length > 2 ? Math.trunc(numify(a[2])) : s.length;
+        return s.substring(i - 1, j);
+      },
+      rep: (a) => {
+        const s = toStringLua(a[0]);
+        const n = a.length > 1 ? Math.trunc(numify(a[1])) : 1;
+        return s.repeat(Math.max(0, n));
+      },
+      len: (a) => toStringLua(a[0]).length,
+      upper: (a) => toStringLua(a[0]).toUpperCase(),
+      lower: (a) => toStringLua(a[0]).toLowerCase(),
+      reverse: (a) => toStringLua(a[0]).split('').reverse().join('')
+    }));
+    globals.vars.set('table', makeLib({
+      insert: (a) => {
+        const tb = a[0];
+        if (!tb || tb.t !== 'table') throw new Error('table.insert 需要一个表');
+        const n = arrayLen(tb);
+        const pos = a.length > 2 ? Math.trunc(numify(a[1])) : n + 1;
+        const val = a.length > 2 ? a[2] : a[1];
+        for (let i = n; i >= pos; i--) tb.map[i + 1] = tb.map[i];
+        tb.map[pos] = val;
+        tb.order = [];
+        for (let i = 1; i <= n + 1; i++) if (Object.prototype.hasOwnProperty.call(tb.map, i)) tb.order.push(i);
+        return null;
+      },
+      concat: (a) => {
+        const tb = a[0];
+        if (!tb || tb.t !== 'table') throw new Error('table.concat 需要一个表');
+        const sep = a.length > 1 ? toStringLua(a[1]) : '';
+        const out = [];
+        for (let i = 1; i <= arrayLen(tb); i++) out.push(toStringLua(tb.map[i]));
+        return out.join(sep);
+      }
+    }));
+    const argTable = { t: 'table', id: ++tableSeq, map: Object.create(null), order: [] };
+    argTable.map[1] = '6';
+    argTable.order.push(1);
+    globals.vars.set('arg', argTable);
   }
 
   function evalExpr(node, env) {
@@ -475,6 +653,12 @@ function run(ast, src, opts) {
         const o = evalExpr(node.obj, env);
         if (!o || o.t !== 'table') throw new Error('尝试索引非表值（' + fmtVal(o) + '）');
         v = Object.prototype.hasOwnProperty.call(o.map, node.name) ? o.map[node.name] : null;
+        break;
+      }
+      case 'Index': {
+        const o = evalExpr(node.obj, env);
+        const key = evalExpr(node.key, env);
+        v = tableGet(o, key);
         break;
       }
       case 'Bin': {
@@ -495,7 +679,9 @@ function run(ast, src, opts) {
         const a = evalExpr(node.e, env);
         if (node.op === '-') v = -numify(a);
         else if (node.op === 'not') v = !truthy(a);
-        else v = toStringLua(a).length;
+        else if (node.op === '#') v = lenOf(a);
+        else if (node.op === '~') v = ~numify(a);
+        else throw new Error('未知一元运算符 ' + node.op);
         break;
       }
       case 'Table': {
@@ -532,6 +718,7 @@ function run(ast, src, opts) {
         ev({ t: 'print', text });
         return null;
       }
+      if (typeof callee.fn === 'function') return callee.fn(args);
       throw new Error('未知内建函数 ' + callee.name);
     }
     if (!callee || callee.t !== 'fn') throw new Error('尝试调用非函数值（' + fmtVal(callee) + '）');
@@ -604,6 +791,11 @@ function run(ast, src, opts) {
             if (!obj.order) obj.order = [];
             if (obj.order.indexOf(tgt.name) < 0) obj.order.push(tgt.name);
             ev({ t: 'set', name: fieldPath(tgt), v: val, id: tgt.id });
+          } else if (tgt.k === 'Index') {
+            const obj = evalExpr(tgt.obj, env);
+            const key = evalExpr(tgt.key, env);
+            tableSet(obj, key, val);
+            ev({ t: 'set', name: targetName(tgt), v: val, id: tgt.id });
           } else throw new Error('不支持的赋值目标');
         }
         break;
@@ -651,6 +843,7 @@ function run(ast, src, opts) {
         ev({ t: 'cls', id: node.id });
         throw new ReturnSignal(vals);
       }
+      case 'Do': execBlock(node.body.stmts, env); break;
       case 'Block': execBlock(node.stmts, env); break;
       default: throw new Error('无法执行节点 ' + node.k);
     }
@@ -712,6 +905,33 @@ const PROGRAMS = {
       'b.x = 10',
       'print(a.x + b.y)'
     ].join('\n')
+  },
+  queens: {
+    label: 'N 皇后（位运算）',
+    src: [
+      '-- N 皇后：位运算回溯（Lua 5.3+）',
+      'local n = tonumber(arg and arg[1]) or 12',
+      'assert(n >= 1 and n <= 20, "n 建议在 1..20 之间")',
+      '',
+      'local full = (1 << n) - 1',
+      'local count = 0',
+      '',
+      'local function dfs(cols, diag1, diag2)',
+      '  if cols == full then',
+      '    count = count + 1',
+      '    return',
+      '  end',
+      '  local avail = full & ~(cols | diag1 | diag2)',
+      '  while avail ~= 0 do',
+      '    local bit = avail & -avail',
+      '    avail = avail ~ bit',
+      '    dfs(cols | bit, (diag1 | bit) << 1, (diag2 | bit) >> 1)',
+      '  end',
+      'end',
+      '',
+      'dfs(0, 0, 0)',
+      'print(count)'
+    ].join('\n')
   }
 };
 
@@ -726,8 +946,8 @@ const KIND_NAME = {
   While: ['while 循环', 'while loop'], Return: ['返回', 'return'], Assign: ['赋值', 'assignment'],
   CallStmt: ['调用语句', 'call statement'], Bin: ['二元运算', 'binary operation'], Un: ['一元运算', 'unary operation'],
   Num: ['数字', 'number'], Str: ['字符串', 'string'], Bool: ['布尔值', 'boolean'], Nil: ['nil', 'nil'],
-  Var: ['变量引用', 'variable'], Field: ['字段访问', 'field access'], Call: ['函数调用', 'function call'],
-  Table: ['表构造', 'table constructor']
+  Var: ['变量引用', 'variable'], Field: ['字段访问', 'field access'], Index: ['下标访问', 'index access'],
+  Call: ['函数调用', 'function call'], Table: ['表构造', 'table constructor'], Do: ['do 块', 'do block']
 };
 
 const KIND_CAT = {
@@ -735,7 +955,7 @@ const KIND_CAT = {
   Local: 'stmt', LocalFunction: 'stmt', FunctionDecl: 'stmt', Function: 'stmt',
   If: 'stmt', NumFor: 'stmt', While: 'stmt', Return: 'stmt', Assign: 'stmt', CallStmt: 'stmt',
   Bin: 'op', Un: 'op', Num: 'lit', Str: 'lit', Bool: 'lit', Nil: 'lit',
-  Var: 'id', Field: 'id', Call: 'call', Table: 'lit'
+  Var: 'id', Field: 'id', Index: 'id', Call: 'call', Table: 'lit', Do: 'stmt'
 };
 
 /* ---------------- 6.5 国际化（简体中文 / English） ---------------- */
@@ -749,6 +969,7 @@ const I18N = {
     'chip.loop': '① 循环求和',
     'chip.fact': '② 递归调用',
     'chip.alias': '③ 表别名',
+    'chip.queens': '④ N 皇后',
     'pane.code': '源代码',
     'pane.output': '输出',
     'pane.tree': '语法树 · 思考轨迹',
@@ -811,6 +1032,7 @@ const I18N = {
     'chip.loop': '① Loop sum',
     'chip.fact': '② Recursion',
     'chip.alias': '③ Table alias',
+    'chip.queens': '④ N-Queens',
     'pane.code': 'Source code',
     'pane.output': 'Output',
     'pane.tree': 'AST · thought trace',
@@ -954,6 +1176,8 @@ function labelOf(n) {
     case 'Nil': return 'nil';
     case 'Var': return n.name;
     case 'Field': return '.' + n.name;
+    case 'Index': return '[ ]';
+    case 'Do': return 'do';
     case 'Call': return 'call';
     case 'Table': return '{ }';
     case 'Local': return n.names.join(', ') + ' =';
@@ -964,7 +1188,7 @@ function labelOf(n) {
     case 'NumFor': return 'for ' + n.name + ' =';
     case 'While': return 'while';
     case 'Return': return 'return';
-    case 'Assign': return n.targets.map(t => t.k === 'Var' ? t.name : '.' + t.name).join(',') + ' =';
+    case 'Assign': return n.targets.map(tg => tg.k === 'Var' ? tg.name : tg.k === 'Field' ? '.' + tg.name : '[...]').join(',') + ' =';
     case 'CallStmt': return t('label.callStmt');
     case 'Block': return t('label.block');
     case 'Chunk': return 'chunk';

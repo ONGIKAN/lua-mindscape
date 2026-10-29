@@ -51,6 +51,21 @@
 | --- | --- |
 | ![递归](docs/images/recursion.png) | ![别名](docs/images/alias.png) |
 
+## 支持的语言子集
+
+原型不是完整的 Lua 5.4，但已经覆盖到能跑真实算法代码（内置的 ④ N 皇后 就是一段现成可运行的位运算回溯）：
+
+- **语句**：`local`、赋值（含多目标）、`if / elseif / else`、`while`、`do … end`、数值 `for`、
+  `return`、函数定义（`function` / `local function`）、调用语句、分号；
+- **表达式**：算术 `+ - * / // % ^`、比较、`and / or / not`、字符串拼接 `..`、一元 `-` `#` `~`、
+  位运算 `& | ~ << >>`（Lua 5.3+ 语义）、括号、表构造 / 字段访问 / **下标 `t[k]`**；
+- **标准库**：`print`、`tonumber`、`tostring`、`type`、`assert`、`error`、`math.*`、`string.*`、
+  `table.insert` / `table.concat`，以及全局 `arg`（原型里 `arg[1] = '6'`，所以 N 皇后跑 6 皇后）；
+- 解析错误会给出「第几行第几列 + 附近源码」，并在代码区就地显示。
+
+暂不支持（正式版 Rust 解释器会逐步补齐）：`repeat/until`、泛型 `for … in`、元表与 `:` 方法语法糖、
+`goto`、`coroutine`、可变参数 `...`、多返回值、`require` 等。
+
 ## 快速开始
 
 ```bash
@@ -89,7 +104,11 @@ python -m http.server 8080
 | `Esc` | 取消编辑，回到运行中的代码 |
 | 右上角 `EN / 中` | 切换中英文界面 |
 
-三个内置示例：循环求和、递归调用、表别名。输出分别为 **30 / 6 / 12**。
+四个内置示例：循环求和、递归调用、表别名、**N 皇后（位运算回溯）**。输出分别为 **30 / 6 / 12 / 4**。
+其中 N 皇后是一段可以直接运行的「真实算法代码」（递归 + 位运算 + 下标 + 标准库），
+只用一条指令 `print(count)` 收尾；它同时演示了递归栈帧、重复热点和位运算表达式的树结构。
+
+![N 皇后：位运算回溯](docs/images/queens.png)
 
 相机是「整树自适应 + 死区跟随」：加载 / 运行后先把整棵树缩放到刚好放进树面板并居中；
 播放时当前节点在视口内就绝不移动画面，只有节点快要移出视口时才一次性移到中间。
@@ -99,7 +118,7 @@ python -m http.server 8080
 
 | 参数 | 作用 |
 | --- | --- |
-| `program=loop\|fact\|alias` | 选择示例程序 |
+| `program=loop\|fact\|alias\|queens` | 选择示例程序 |
 | `still=1&step=N` | 静态渲染到第 N 个事件（不自动播放，方便截图） |
 | `speed=N` | 事件间隔毫秒数（默认 180） |
 | `scale=0.72` | 初始缩放比例 |
@@ -125,7 +144,7 @@ lua-brain-proto/
 ├── docs/
 │   ├── DESIGN.md           设计文档（中文）
 │   ├── DESIGN.en.md        设计文档（English）
-│   ├── images/             截图（桌面 / 递归 / 别名 / 平板 / 手机 / 编辑器 / 英文界面）
+│   ├── images/             截图（桌面 / 递归 / 别名 / N 皇后 / 编辑器 / 平板 / 手机 / 英文界面）
 │   └── community-submission.md   Lua 社区提交材料草稿（awesome-lua / lua-users / lua-l / Reddit）
 ├── README.md               中文文档（本页）
 └── README.en.md            English documentation
@@ -135,12 +154,15 @@ lua-brain-proto/
 
 用 `tools/qa.mjs`（Edge headless + Chrome DevTools Protocol）在真实浏览器里验收：
 
-- 三个示例程序语义正确：loop → `30`、fact → `6`、alias → `12`（事件数 77 / 85 / 39）；
+- 四个示例程序语义正确：loop → `30`、fact → `6`、alias → `12`、queens → `4`（事件数 77 / 85 / 39 / 14,952）；
 - 递归时 4 个栈帧同时存在，`n` 分别为 3 / 2 / 1，颜色与节点光晕一致；
 - 表别名：`a` 与 `b` 显示同一个 `t1` 颜色点，`b.x = 10` 后 `a.x` 同步为 10；
+- N 皇后（真实位运算回溯代码，含 `arg` / `tonumber` / `assert` / 下标 / `& | ~ << >>`）解析执行正确，
+  递归 3 层栈帧同时可见（`cols / diag1 / diag2 / avail / bit` 各帧值），输出 `4`；
 - 桌面 1600×1000 / 1920×1080、平板 820×1180、手机 390×844 布局均可用；
 - 页面无异常、无 console error；时间轴拖动、单步、点击节点跳转、切示例程序均验证通过；
 - 代码编辑：自定义代码 `local x = 5 / print(x * 2)` 运行成功（19 个 trace 事件），解析错误就地显示；
+  把整段 N 皇后代码粘进编辑器也能直接运行；
 - 新建 / 导入：新建模板可直接运行；`importText()` 与拖拽导入均自动编译并运行（如 `local a = 2 / print(a*a)` 输出 `4`）；
 - 相机稳定性：1666px 宽度下整树自动适配为 0.94 倍并完整可见；在 77 个连续事件里相机位置变化 **0 次**（上一版 31 步内 6 次平移）。树尺寸从 1201×675 压缩到 **802×394**（loop 示例，约 -33%）；
 - 中英双语：`?lang=en` 下标题 / 品牌 / 提示 / 栈帧文案全部切换，`EN / 中` 按钮可即时切换并记住选择；
@@ -157,7 +179,8 @@ lua-brain-proto/
 ### 重新生成截图
 
 ```bash
-node tools/qa.mjs --program loop --step 45 --width 1920 --height 1080 --scale 0.72 --out docs/images/hero.png
+node tools/qa.mjs --program loop --step 45 --width 1920 --height 1080 --out docs/images/hero.png
+node tools/qa.mjs --program queens --step 320 --width 1600 --height 1000 --out docs/images/queens.png
 node tools/qa.mjs --program fact --step 60 --out docs/images/recursion.png
 node tools/qa.mjs --program alias --step 25 --out docs/images/alias.png
 node tools/qa.mjs --program loop --step 45 --width 390 --height 844 --out docs/images/phone.png

@@ -25,8 +25,11 @@
       <button class="chip active" data-program="loop" role="tab" data-i18n="chip.loop">① 循环求和</button>
       <button class="chip" data-program="fact" role="tab" data-i18n="chip.fact">② 递归调用</button>
       <button class="chip" data-program="alias" role="tab" data-i18n="chip.alias">③ 表别名</button>
+      <button class="chip" data-program="queens" role="tab" data-i18n="chip.queens">④ N 皇后</button>
     </div>
     <div class="top-actions">
+      <a id="repoLink" class="tbtn repo" href="https://github.com/ONGIKAN/lua-mindscape" target="_blank" rel="noopener"
+         title="在 GitHub 上查看源码 / View source on GitHub" aria-label="GitHub repository">GitHub ↗</a>
       <button id="btnLang" class="tbtn lang" data-i18n-title="btn.lang" title="切换语言 / Switch language">EN</button>
       <button id="btnInstall" class="tbtn install" data-i18n-title="btn.install.title" title="安装到桌面 / 主屏幕">⤓</button>
     </div>
@@ -96,12 +99,14 @@
         <option value="180" selected>1×</option>
         <option value="70">2.5×</option>
         <option value="28">6×</option>
+        <option value="9">20×</option>
       </select>
     </label>
   </footer>
-  <div class="footnote" data-i18n="footnote">
-    原型说明：解析器 / 解释器 / trace 回放均为简化版 JavaScript 实现，仅用于验证交互与视觉；
-    正式版核心为 Rust（full-moon 解析 + 显式状态机解释器）→ WebAssembly。
+  <div class="footnote"><span data-i18n="footnote">原型说明：解析器 / 解释器 / trace 回放均为简化版 JavaScript 实现，仅用于验证交互与视觉；
+    正式版核心为 Rust（full-moon 解析 + 显式状态机解释器）→ WebAssembly。</span>
+    <span class="foot-sep">·</span>
+    <a class="foot-link" href="https://github.com/ONGIKAN/lua-mindscape" target="_blank" rel="noopener">GitHub · 源码</a>
   </div>
 </div>
 <script src="app.js"></script>

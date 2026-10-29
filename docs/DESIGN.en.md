@@ -116,10 +116,18 @@ Style: light, square, thin borders, one accent color — a *teaching dashboard*,
 
 ## 9. Testing strategy
 
-- **Semantics**: assertions on the three samples (30 / 6 / 12); randomized differential tests vs mlua.
+- **Semantics**: assertions on the four samples (30 / 6 / 12 / 4); real algorithm code end-to-end —
+  N-Queens (bitwise backtracking, 14,952 trace events, 3 recursive frames) parses, runs and prints `4`
+  in the browser; pasting the whole program into the editor also passes. Randomized differential tests
+  vs mlua (production).
+- **Language coverage (prototype)**: locals & multi-target assignment, `if/elseif/else`, `while`,
+  `do … end`, numeric `for`, `return`, functions & recursion, table constructors / field access /
+  indexing `t[k]`, arithmetic / comparison / logic / string concat, bitwise `& | ~ << >>`
+  (plus unary `~`), `#` length, standard library (`print` `tonumber` `tostring` `type` `assert`
+  `error` `math.*` `string.*` `table.insert/concat`) and the global `arg`; parse errors report line/column.
 - **UI**: `tools/qa.mjs` (headless Edge + CDP) checks layout, event counts, active node, frame count,
   screenshots; regression at phone / tablet breakpoints.
-- **Editor**: custom code runs, parse errors, localStorage restore.
+- **Editor**: custom code runs, parse errors, new / import, localStorage restore.
 - **i18n**: full-string assertions with `?lang=en`.
 
 ## 10. Decisions / open questions

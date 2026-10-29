@@ -29,15 +29,16 @@
 
 ## 二、发布前置条件（Checklist）
 
-- [ ] 代码推送到公开仓库：建议仓库名 `lua-mindscape`（或 `lua-mind-viz`）
-- [ ] 部署在线 demo（本原型是纯静态页，可直接用 GitHub Pages，无需构建）
+- [x] 代码推送到公开仓库：<https://github.com/ONGIKAN/lua-mindscape>（已完成）
+- [x] 部署在线 demo：<https://ongikan.github.io/lua-mindscape/>（GitHub Pages，已完成）
 - [x] 中英双语文档：`README.md` / `README.en.md` / `docs/DESIGN.md` / `docs/DESIGN.en.md`（已完成）
 - [x] 可安装客户端（PWA：manifest + Service Worker + 图标；离线可用；正式版为 Tauri 2）（已完成）
-- [ ] `README.md` 含英文摘要（已写好，见仓库根目录）
-- [ ] 添加 `LICENSE`（建议 MIT）
-- [ ] GitHub 登录有效（注意：本机 `gh auth status` 显示 token 已失效，需要先 `gh auth login`）
-- [ ] 确认对外名称：「Lua 思维可视化」/ “Lua Mindscape”
-- [ ] 确认提交范围：只提本项目，还是也要处理 `ONGIKAN/lua-node-studio`（另一个仓库）
+- [x] `README.md` 含英文摘要（已写好，见仓库根目录）
+- [x] 添加 `LICENSE`（MIT，已完成）
+- [x] 仓库与演示页互相指向：页面右上角 / 页脚有 GitHub 链接，README 首屏有 Live demo，GitHub About 的 homepage 指向演示页
+- [x] 对外名称：英文 **Lua Mindscape**，中文 **Lua 思维可视化**
+- [ ] 确认提交范围：只提本项目，还是也要处理 `ONGIKAN/lua-node-studio`（另一个仓库）（待用户确认）
+- [ ] 对外投放：本文件 4 份草稿已随功能更新，等用户确认后再依次发 wiki / lua-l / Reddit / awesome-lua
 
 ---
 
@@ -56,11 +57,13 @@
 First public prototype: a single-page, zero-dependency web demo that visualizes
 Lua's evaluation trace on top of the AST.
 
-- Three built-in programs: loop sum, recursion, table aliases
+- Four built-in programs: loop sum, recursion, table aliases, and an **N-Queens solver**
+  using Lua 5.3 bitwise operators (`& | ~ << >>`) — real algorithm code running on the trace visualizer
 - Playback timeline: play / pause / step / scrub / click a node to jump in time
 - Call-stack panel with per-frame colors; values shown as node badges
 - Table identity colors (aliasing visible at a glance)
-- Inline Lua editor: edit the source and run it; parse errors shown inline
+- Inline Lua editor: edit the source and run it; parse errors shown inline (line/column)
+- New / import Lua files (file picker or drag & drop), then run them immediately
 - Bilingual UI (English / Chinese) with a persisted language toggle
 - Installable as a desktop / mobile client (PWA) and works offline
 - Light, minimal theme; responsive layout for desktop / tablet / phone
@@ -164,13 +167,16 @@ and which variables alias the same table. Lua's small, regular syntax
 makes this kind of visualization unusually pleasant.
 
 Current status: a single-page web prototype (zero install, runs in the
-browser) with three demo programs: a loop, a recursive function, and a
-table-aliasing example. It has a playback timeline (play/pause/step/scrub),
-click-to-jump from AST nodes to the moment they execute, a call-stack panel
-with per-frame colors, and a responsive layout for desktop/tablet/phone.
+browser) with four demo programs: a loop, a recursive function, a
+table-aliasing example, and an N-Queens solver written with Lua 5.3 bitwise
+operators (a real backtracking algorithm, not a toy AST). It has a playback
+timeline (play/pause/step/scrub), click-to-jump from AST nodes to the moment
+they execute, a call-stack panel with per-frame colors, and a responsive
+layout for desktop/tablet/phone.
 The prototype also lets you edit and run Lua right in the page (parse errors
-shown inline), its UI is bilingual (English/Chinese), and it installs as a PWA
-so the demo works offline.
+shown inline), create/import .lua files (file picker or drag & drop), its UI
+is bilingual (English/Chinese), and it installs as a PWA so the demo works
+offline.
 
 Demo: https://ongikan.github.io/lua-mindscape/
 Source: https://github.com/ONGIKAN/lua-mindscape
@@ -215,7 +221,10 @@ What it shows:
 - call-stack frames, each with its own color, matching the node highlight;
 - loops/recursion "hot spots" (nodes that ran many times);
 - table identity colors, so aliasing (`local b = a`) is visible immediately;
-- an inline editor: change the Lua source and re-run it in place.
+- an inline editor: change the Lua source and re-run it in place, plus
+  new/import of .lua files (picker or drag & drop);
+- four demo programs, including an N-Queens solver using Lua 5.3 bitwise
+  operators — real backtracking code, so you can watch real algorithm traces.
 
 There's a playback timeline (play/pause/step/scrub) and clicking an AST node
 jumps to the moment it executes.
