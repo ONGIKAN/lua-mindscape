@@ -192,9 +192,10 @@ Verified in a real browser with `tools/qa.mjs` (headless Edge + Chrome DevTools 
 - Stronger highlight: active node scaled up + thicker outline + outer halo + value chips,
   in both layouts and on mobile;
 - Phone (≤520px) compact layout: header keeps only brand + GitHub icon + language toggle, sample chips
-  scroll horizontally; the code toolbar collapses to `+ / ⤓ / ✎` icons; the state pane shows only the
-  current frame plus an "N more frames" line; the tree pane takes about half the screen and the footer
-  is hidden; verified at 390×844 with no clipping and 0 exceptions;
+  scroll horizontally; the code toolbar collapses to `+ / ⤓ / ✎` icons with ~5 code lines visible; the
+  state pane becomes a one-line frame capsule (inline vars) plus a single-line step note; the tree is
+  fit to the screen and supports two-finger pinch-zoom and drag-pan; the footer is hidden; verified at
+  390×844 and 430×932 with no clipping and 0 exceptions;
 - No exceptions, no console errors; scrubbing, stepping, node-jump and sample switching all pass;
 - Code editing: custom code `local x = 5 / print(x * 2)` runs (19 trace events), parse errors are inline;
   pasting the whole N-Queens program also runs;

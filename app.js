@@ -1644,7 +1644,8 @@ function fitTree() {
   const W = vp.clientWidth - 32;
   const H = vp.clientHeight - 32;
   const s = Math.min(W / Math.max(1, app.treeW), H / Math.max(1, app.treeH));
-  app.scale = Math.max(0.7, Math.min(1, Math.round(s * 100) / 100));
+  const minScale = isCompactUI() ? 0.42 : 0.7;
+  app.scale = Math.max(minScale, Math.min(1, Math.round(s * 100) / 100));
   app.userPanned = false;
   $('#tree').classList.remove('nofollow');
   app.tx = (vp.clientWidth - app.treeW * app.scale) / 2;
@@ -1821,13 +1822,36 @@ function valueHTML(v) {
   return esc(String(v));
 }
 
+/* 手机端：当前栈帧压成一行（可横向滚动），把高度让给树 */
+function buildFrameBar(st, nf) {
+  const i = nf - 1;
+  const fr = st.framesView[i];
+  const bar = document.createElement('div');
+  bar.className = 'frame-bar';
+  bar.style.setProperty('--fc', PALETTE[i % PALETTE.length]);
+  const name = i === 0 ? t('frame.main') : fr.name + '()';
+  const idx = i === 0 ? t('frame.mainTag') : t('frame.idx', { n: fr.id });
+  let html = '<span class="fb-name">' + esc(name) + '</span><span class="fb-idx">' + esc(idx) + '</span>';
+  let count = 0;
+  for (const [k, v] of fr.vars) {
+    if (count++ >= 5) { html += '<span class="fb-ellipsis">…</span>'; break; }
+    html += '<span class="fb-var"><span class="k">' + esc(k) + '</span><b>' + valueHTML(v) + '</b></span>';
+  }
+  if (!fr.vars.size) html += '<span class="fb-none">' + esc(t('noLocals')) + '</span>';
+  if (nf > 1) html += '<span class="fb-more">' + esc(t('frames.more', { n: nf - 1 })) + '</span>';
+  bar.innerHTML = html;
+  return bar;
+}
+
 function renderFrames(st, nf) {
   const el = $('#frames');
   el.innerHTML = '';
   const compact = isCompactUI();
-  /* 手机端只展示最内层栈帧，其余折叠成一行摘要，避免状态栏拥挤 */
-  const from = compact ? nf - 1 : 0;
-  for (let i = nf - 1; i >= from; i--) {
+  if (compact) {
+    el.appendChild(buildFrameBar(st, nf));
+    return;
+  }
+  for (let i = nf - 1; i >= 0; i--) {
     const fr = st.framesView[i];
     const color = PALETTE[i % PALETTE.length];
     const box = document.createElement('div');
@@ -1855,12 +1879,6 @@ function renderFrames(st, nf) {
       }
     }
     el.appendChild(box);
-  }
-  if (compact && nf > 1) {
-    const more = document.createElement('div');
-    more.className = 'frames-more';
-    more.textContent = t('frames.more', { n: nf - 1 });
-    el.appendChild(more);
   }
 }
 
@@ -2281,13 +2299,46 @@ function bindControls() {
   window.addEventListener('resize', () => { if (app.editing) positionEditor(); });
 
   const vp = $('#treeviewport');
+  const pointers = new Map();
+  let pinch = null;
   vp.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.node')) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 2) {
+      const pts = Array.from(pointers.values());
+      pinch = {
+        dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y),
+        midX: (pts[0].x + pts[1].x) / 2,
+        midY: (pts[0].y + pts[1].y) / 2,
+        scale: app.scale, tx: app.tx, ty: app.ty
+      };
+      app.dragging = null;
+      return;
+    }
     app.dragging = { x: e.clientX, y: e.clientY, tx: app.tx, ty: app.ty, moved: 0 };
     $('#tree').classList.add('nofollow');
     try { vp.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
   });
   vp.addEventListener('pointermove', (e) => {
+    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && pointers.size >= 2) {
+      const pts = Array.from(pointers.values()).slice(0, 2);
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const f = pinch.dist > 0 ? dist / pinch.dist : 1;
+      const next = Math.max(0.3, Math.min(1.8, pinch.scale * f));
+      const k = next / pinch.scale;
+      const rect = vp.getBoundingClientRect();
+      const mx = pinch.midX - rect.left;
+      const my = pinch.midY - rect.top;
+      app.scale = next;
+      app.tx = mx - (mx - pinch.tx) * k;
+      app.ty = my - (my - pinch.ty) * k;
+      app.userPanned = true;
+      app.suppressClick = true;
+      $('#tree').classList.add('nofollow');
+      applyView();
+      return;
+    }
     if (!app.dragging) return;
     const dx = e.clientX - app.dragging.x;
     const dy = e.clientY - app.dragging.y;
@@ -2301,8 +2352,10 @@ function bindControls() {
       applyView();
     }
   });
-  const endDrag = () => {
-    if (app.dragging && app.dragging.moved > 4) {
+  const endDrag = (e) => {
+    if (e && e.pointerId != null) pointers.delete(e.pointerId);
+    if (pinch && pointers.size < 2) pinch = null;
+    if (app.suppressClick || (app.dragging && app.dragging.moved > 4)) {
       setTimeout(() => { app.suppressClick = false; }, 0);
     }
     if (!app.userPanned) $('#tree').classList.remove('nofollow');

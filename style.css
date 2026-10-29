@@ -449,3 +449,57 @@ a.tbtn{display:inline-flex;align-items:center;justify-content:center;text-decora
   #speed{height:26px;font-size:10.5px;padding:0 4px}
   .footnote{display:none}
 }
+
+/* ======================================================================
+   移动端 v2：极限压缩竖向 chrome，把高度让给语法树
+   ====================================================================== */
+.tree-viewport{touch-action:none}
+
+/* 手机：当前栈帧压成一行胶囊条 */
+.frame-bar{
+  display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;
+  padding:5px 8px;background:var(--surface);
+  border:1px solid var(--line);border-left:3px solid var(--fc,var(--accent));
+  font-size:10.5px;line-height:1.3;scrollbar-width:none;
+}
+.frame-bar::-webkit-scrollbar{display:none}
+.frame-bar .fb-name{font-weight:700;color:var(--text)}
+.frame-bar .fb-idx{font:10px var(--mono);color:var(--dim);letter-spacing:.2px}
+.frame-bar .fb-var{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;background:#f6f7f9;border:1px solid var(--line);font:10px var(--mono);color:var(--text-2)}
+.frame-bar .fb-var b{color:var(--green);font-weight:600}
+.frame-bar .fb-more{color:var(--dim);font-size:10px;margin-left:auto}
+.frame-bar .fb-none{color:var(--dim);font-size:10px}
+
+@media (max-width:520px){
+  .app{padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:6px}
+  .topbar{gap:6px}
+  .stage{grid-template-rows:minmax(0,.86fr) minmax(0,2fr) auto;gap:6px}
+  .pane{padding:6px 8px}
+  .pane-head{margin-bottom:3px}
+  .pane-head h2{font-size:10px}
+  .code-wrap{min-height:58px}
+  .app{--code-fs:11px;--code-lh:17px}
+  .code{padding:4px 3px}
+  .line{padding:0 4px}
+  .ln{width:2em;font-size:9px;margin-right:6px}
+  .io-head{display:none}
+  .output{max-height:28px;min-height:0;margin-top:3px;padding:2px 6px;font-size:10px}
+  .output:empty{display:none}
+  .code-error{max-height:34px;font-size:9.5px}
+  .tree-viewport{min-height:280px}
+  .state-pane{padding-top:7px;padding-bottom:7px}
+  .state-pane .pane-head{margin-bottom:4px}
+  .stepmeta{margin:0;padding:0;border:0}
+  .stepmeta h2{display:none}
+  .step-label{font-size:10px;min-height:0;padding:4px 7px;line-height:15px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .controls{padding:5px 6px;gap:5px}
+  .btn{height:28px;min-width:28px;padding:0 7px;font-size:12px}
+  .btn svg{width:13px;height:13px}
+  .btn-play{height:30px;min-width:32px}
+  .scrub{order:9;flex-basis:100%;height:14px;min-width:60px;margin-top:1px}
+  .counter{font-size:10px;min-width:46px}
+  .speed-wrap{font-size:10px;gap:3px}
+  #speed{height:24px;font-size:10px;padding:0 3px}
+  .footnote{display:none}
+}
