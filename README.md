@@ -121,7 +121,10 @@ python -m http.server 8080
 | 规整 ▦ | 神经元 ◉ |
 | --- | --- |
 | 经典 tidy tree，层级清晰，适合读语法结构 | 节点径向散开 + 弯曲流动边，更像神经网络在活动 |
-| ![规整布局](docs/images/loop.png) | ![神经元布局](docs/images/neuron.png) |
+| ![规整布局](docs/images/loop.png) | ![神经元布局](docs/images/neuron.png)
+N 皇后（150 个 AST 节点）在神经元布局下的样子：
+
+![神经元布局 · N 皇后](docs/images/neuron-queens.png) |
 
 当前节点做了强高亮：放大、描边加粗、外圈脉冲光晕，`= 值` 与 `×n` 变成胶囊标签，
 无论在哪种布局、桌面还是手机上，都能一眼找到「此刻在算哪里」。

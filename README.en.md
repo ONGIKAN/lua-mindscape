@@ -128,7 +128,11 @@ zooming or `⤢` re-centers on purpose.
 | Grid ▦ | Neuron ◉ |
 | --- | --- |
 | Classic tidy tree — clear hierarchy, best for reading structure | Radial scatter with curved, flowing edges — reads like a neural network |
-| ![Grid layout](docs/images/loop.png) | ![Neuron layout](docs/images/neuron.png) |
+| ![Grid layout](docs/images/loop.png) | ![Neuron layout](docs/images/neuron.png) || ![Grid layout](docs/images/loop.png) | ![Neuron layout](docs/images/neuron.png) |
+
+N-Queens (150 AST nodes) in neuron layout:
+
+![Neuron layout · N-Queens](docs/images/neuron-queens.png)
 
 The active node is strongly highlighted: scaled up, thicker outline, pulsing outer halo, and
 `= value` / `×n` turned into chips — findable in either layout, on desktop or mobile.
